@@ -1,0 +1,9 @@
+{
+  "name": "chart",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "http-server . -p 3000"
+  }
+}

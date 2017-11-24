@@ -1,0 +1,232 @@
+<!doctype html>
+<html>
+<head>
+    <title>Chart</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+	<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+	<script src="/assets/lodash.min.js"></script>
+	<link href="/assets/datepicker.min.css" rel="stylesheet" type="text/css">
+	<script src="/assets/datepicker.min.js"></script>
+	<script src="/assets/web3.min.js"></script>
+	<script src="/assets/Base58.js"></script>
+</head>
+<body>
+	
+<div class="container">
+	<div class="starter-template">
+		<h1>Визуализации игры Робономика</h1>
+		<div class="panel panel-default">
+			<div class="panel-body">
+				<form action="" method="get" class="form-inline">
+					<div class="form-group">
+						<label for="date">Date</label>
+						<input type='text' name="date" class="form-control datepicker-here" style="width:265px;" data-position="right top" />
+					</div>
+					<button type="button" class="btn btn-default" onClick="loadData();return false;">Show</button>
+				</form>
+			</div>
+		</div>
+		<div id="container" style="width:100%; height:200px;"></div>
+	</div>
+</div>
+	
+<script src="https://code.highcharts.com/highcharts.src.js"></script>
+<script>
+Highcharts.Pointer.prototype.reset = function () {
+    return undefined;
+};
+
+Highcharts.Point.prototype.highlight = function (event) {
+    this.onMouseOver(); // Show the hover marker
+    this.series.chart.tooltip.refresh(this); // Show the tooltip
+    this.series.chart.xAxis[0].drawCrosshair(event, this); // Show the crosshair
+};
+
+function syncExtremes(e) {
+    var thisChart = this.chart;
+
+    if (e.trigger !== 'syncExtremes') { // Prevent feedback loop
+        Highcharts.each(Highcharts.charts, function (chart) {
+            if (chart !== thisChart) {
+                if (chart.xAxis[0].setExtremes) { // It is null while updating
+                    chart.xAxis[0].setExtremes(e.min, e.max, undefined, false, { trigger: 'syncExtremes' });
+                }
+            }
+        });
+    }
+}
+	
+var web3 = new Web3();
+function getAccount(msg) {	
+	var data = web3.utils.soliditySha3({type: 'bytes', value: web3.utils.bytesToHex(Base58.decode(msg.model))}, {type: 'uint256', value: msg.cost}, {type: 'uint256', value: msg.count}, {type: 'uint256', value: msg.fee}, {type: 'bytes32', value: web3.utils.bytesToHex(msg.salt)});
+	var hashMessage = web3.utils.soliditySha3({type: 'bytes', value: '0x19457468657265756d205369676e6564204d6573736167653a0a3332'}, {type: 'bytes', value: data});
+	var signature = web3.utils.bytesToHex(msg.signature)
+	var account = web3.eth.accounts.recover(hashMessage, signature);
+	return account;
+}
+
+$('.datepicker-here').datepicker({range: true, multipleDatesSeparator: ' - ', minutesStep: 10, timepicker: true})
+		
+var merketsName = {
+	'QmX6ZRFhNdoCsdtjBfYsPJd3iKahW3Hijp2WMJs8pfXeWP': 'red',
+	'QmTnmssidmL3Kqabz3eECxDsXUbXdQEEqaBE1vvdmkc1xv': 'green',
+	'QmVLDAhCY3X9P2uRudKAryuQFPM5zqA3Yij1dY8FpGbL7T': 'grey',
+	'QmYcq3KNupcEq6bsS8gJraJdFN8XXRHi6R3tMYUyxLr5Dz': 'blue'	
+}
+var merketsColor = {
+	'QmX6ZRFhNdoCsdtjBfYsPJd3iKahW3Hijp2WMJs8pfXeWP': '#ff9393',
+	'QmTnmssidmL3Kqabz3eECxDsXUbXdQEEqaBE1vvdmkc1xv': '#abde9b',
+	'QmVLDAhCY3X9P2uRudKAryuQFPM5zqA3Yij1dY8FpGbL7T': '#c7c7c7',
+	'QmYcq3KNupcEq6bsS8gJraJdFN8XXRHi6R3tMYUyxLr5Dz': '#7f81fb'	
+}
+function loadData() {
+	$('#container').html('')
+	var markets = []
+	$.get('http://localhost:5000/?date=' + $('input[name=date]').val(), function(r) {
+		var json = JSON.parse(r)
+		for (var i = 0; i < json.length; i++) {
+			if (json[i].topic == '/market/sending/bid' || json[i].topic == '/market/sending/ask') {
+		console.log(json[i])
+								
+				var msg = '{'+json[i].msg+'}'
+				msg = msg.replace(new RegExp(': ', 'g'), "': ")
+				msg = msg.replace(new RegExp('objective', 'g'), "'objective")
+				msg = msg.replace(new RegExp('cost', 'g'), "'cost")
+				msg = msg.replace(new RegExp('count', 'g'), "'count")
+				msg = msg.replace(new RegExp('fee', 'g'), "'fee")
+				msg = msg.replace(new RegExp('salt', 'g'), "'salt")
+				msg = msg.replace(new RegExp('signature', 'g'), "'signature")
+				msg = msg.replace(new RegExp('{', 'g'), "{'")
+				msg = msg.replace(new RegExp("'", 'g'), '"')
+				msg = JSON.parse(msg)
+				
+				var model = msg.model
+				var cost = msg.cost
+				var count = msg.count
+				var account = getAccount(msg)
+				console.log(account)
+		
+				var marketIndex = _.findIndex(markets, { name: merketsName[model] });
+				if (marketIndex >= 0) {
+					if (json[i].topic == '/market/sending/bid') {
+						if (_.has(markets[marketIndex].series, account)) {
+							markets[marketIndex].series[account].data.push([count, cost])
+						} else {
+							markets[marketIndex].series[account] = {
+								name: 'Предложение',
+								typeLine: 'bid',
+								data: []
+							}
+							markets[marketIndex].series[account].data.push([count, cost])
+						}
+					} else if (json[i].topic == '/market/sending/ask') {
+						if (_.has(markets[marketIndex].series, 'ask')) {
+							markets[marketIndex].series.ask.data.push([count, cost])
+						} else {
+							markets[marketIndex].series.ask = {
+								name: 'Спрос',
+								typeLine: 'ask',
+								data: []
+							}
+							markets[marketIndex].series.ask.data.push([count, cost])
+						}
+					}
+				} else {
+					var series = {}
+					if (json[i].topic == '/market/sending/bid') {
+						series[account] = {
+							name: 'Предложение',
+							typeLine: 'bid',
+							data: [[count, cost]]
+						}
+					} else if (json[i].topic == '/market/sending/ask') {
+						series.ask = {
+							name: 'Спрос',
+							typeLine: 'ask',
+					        color: merketsColor[model],
+							data: [[count, cost]]
+						}
+					}
+					markets.push({
+						name: merketsName[model],
+						series: series
+					})
+					
+				}
+			}
+		}
+		showChart(markets)
+	})
+}
+function showChart(markets) {
+	for (var i = 0; i < markets.length; i++) {
+		var market = markets[i];
+		var series = _.values(market.series)
+		
+		var ask = _.find(series, {typeLine: 'ask'})
+		var bids = _.filter(series, {typeLine: 'bid'})
+		var intersect = _.intersectionWith(ask.data, bids[0].data, _.isEqual)
+		
+		series.push({
+			name: 'intersect',
+	        color: '#cc1d1d',
+			marker:{
+				radius:6,
+				symbol: 'circle'
+			},
+			data: intersect,
+			type: 'scatter'
+		})
+	
+		$('<div class="chart" style="width:50%;float:left;">')
+			.appendTo('#container')
+			.highcharts({
+				chart: {
+					marginLeft: 40,
+					spacingTop: 20,
+					spacingBottom: 20
+				},
+				title: {
+					text: market.name,
+					align: 'left',
+					margin: 0,
+					x: 30
+				},
+				credits: {
+					enabled: false
+				},
+				legend: {
+					enabled: false
+				},
+				xAxis: {
+					crosshair: true,
+					events: {
+						setExtremes: syncExtremes
+					}
+				},
+				yAxis: {
+					title: {
+						text: null
+					}
+				},
+				tooltip: {
+					positioner: function () {
+						return {
+							x: this.chart.chartWidth - this.label.width,
+							y: 10
+						};
+					},
+					borderWidth: 0,
+					backgroundColor: 'none',
+					pointFormat: '{point.x} / {point.y}',
+					headerFormat: '',
+					shadow: false
+				},
+				series: series
+			});
+	}
+}
+</script>
+</body>
+</html>
