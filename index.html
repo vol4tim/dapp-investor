@@ -13,7 +13,7 @@
 </head>
 <body>
 	
-<div class="container">
+<div class="container-fluid">
 	<div class="starter-template">
 		<h1>Визуализации игры Робономика</h1>
 		<div class="panel panel-default">
@@ -69,17 +69,25 @@ function getAccount(msg) {
 $('.datepicker-here').datepicker({range: true, multipleDatesSeparator: ' - ', minutesStep: 10, timepicker: true})
 		
 var merketsName = {
-	'QmX6ZRFhNdoCsdtjBfYsPJd3iKahW3Hijp2WMJs8pfXeWP': 'red',
+	'QmX6ZRFhNdoCsdtjBfYsPJd3iKahW3Hijp2WMJs8pfXeWP': 'yellow',
 	'QmTnmssidmL3Kqabz3eECxDsXUbXdQEEqaBE1vvdmkc1xv': 'green',
-	'QmVLDAhCY3X9P2uRudKAryuQFPM5zqA3Yij1dY8FpGbL7T': 'grey',
-	'QmYcq3KNupcEq6bsS8gJraJdFN8XXRHi6R3tMYUyxLr5Dz': 'blue'	
+	'QmVLDAhCY3X9P2uRudKAryuQFPM5zqA3Yij1dY8FpGbL7T': 'blue',
+	'QmYcq3KNupcEq6bsS8gJraJdFN8XXRHi6R3tMYUyxLr5Dz': 'purple'	
 }
 var merketsColor = {
-	'QmX6ZRFhNdoCsdtjBfYsPJd3iKahW3Hijp2WMJs8pfXeWP': '#ff9393',
+	'QmX6ZRFhNdoCsdtjBfYsPJd3iKahW3Hijp2WMJs8pfXeWP': '#e6d32f',
 	'QmTnmssidmL3Kqabz3eECxDsXUbXdQEEqaBE1vvdmkc1xv': '#abde9b',
-	'QmVLDAhCY3X9P2uRudKAryuQFPM5zqA3Yij1dY8FpGbL7T': '#c7c7c7',
-	'QmYcq3KNupcEq6bsS8gJraJdFN8XXRHi6R3tMYUyxLr5Dz': '#7f81fb'	
+	'QmVLDAhCY3X9P2uRudKAryuQFPM5zqA3Yij1dY8FpGbL7T': '#7f81fb',
+	'QmYcq3KNupcEq6bsS8gJraJdFN8XXRHi6R3tMYUyxLr5Dz': '#de2fe6'	
 }
+var accounts = {
+	'0x00C40c00BFbdf3956eEfF267736DaF8f1203330f': 'Предложение 1',
+	'0x00d4E36981c631dB44714416075978d721aD5eF0': 'Предложение 2',
+	'0x00d636053Dea4d00B0165eBcAD5eA283Fbf48FA1': 'Предложение 3',
+	'0x008284E1D9582AAD15dDd9390216B3a0445D1474': 'Предложение 4'
+}
+
+
 function loadData() {
 	$('#container').html('')
 	var markets = []
@@ -87,7 +95,6 @@ function loadData() {
 		var json = JSON.parse(r)
 		for (var i = 0; i < json.length; i++) {
 			if (json[i].topic == '/market/sending/bid' || json[i].topic == '/market/sending/ask') {
-		console.log(json[i])
 								
 				var msg = '{'+json[i].msg+'}'
 				msg = msg.replace(new RegExp(': ', 'g'), "': ")
@@ -105,7 +112,6 @@ function loadData() {
 				var cost = msg.cost
 				var count = msg.count
 				var account = getAccount(msg)
-				console.log(account)
 		
 				var marketIndex = _.findIndex(markets, { name: merketsName[model] });
 				if (marketIndex >= 0) {
@@ -114,7 +120,7 @@ function loadData() {
 							markets[marketIndex].series[account].data.push([count, cost])
 						} else {
 							markets[marketIndex].series[account] = {
-								name: 'Предложение',
+								name: accounts[account],
 								typeLine: 'bid',
 								data: []
 							}
@@ -136,7 +142,7 @@ function loadData() {
 					var series = {}
 					if (json[i].topic == '/market/sending/bid') {
 						series[account] = {
-							name: 'Предложение',
+							name: accounts[account],
 							typeLine: 'bid',
 							data: [[count, cost]]
 						}
@@ -166,10 +172,13 @@ function showChart(markets) {
 		
 		var ask = _.find(series, {typeLine: 'ask'})
 		var bids = _.filter(series, {typeLine: 'bid'})
-		var intersect = _.intersectionWith(ask.data, bids[0].data, _.isEqual)
+		var intersect = []
+		for (var bids_i = 0; bids_i < bids.length; bids_i++) {
+			intersect = _.concat(intersect, _.intersectionWith(ask.data, bids[bids_i].data, _.isEqual))
+		}
 		
 		series.push({
-			name: 'intersect',
+			name: 'Пересечения',
 	        color: '#cc1d1d',
 			marker:{
 				radius:6,
@@ -197,7 +206,9 @@ function showChart(markets) {
 					enabled: false
 				},
 				legend: {
-					enabled: false
+					layout: 'horizontal',
+					//align: 'right',
+					verticalAlign: 'top'
 				},
 				xAxis: {
 					crosshair: true,
