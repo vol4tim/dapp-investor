@@ -1,0 +1,41 @@
+.wrapper {
+  position: relative;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  height: 600px;
+  background: #544e4e;
+}
+.wrapper pre {
+  border: 0;
+  background: none;
+  height: 100%;
+  margin: 0;
+  color: #fff;
+}
+.wrapper input {
+  position: absolute;
+  overflow: hidden;
+  bottom: 0;
+}
+.prompt {
+  display: inline-block;
+  padding-right: .5rem;
+}
+.cursor {
+  -webkit-animation: flash linear 1s infinite;
+  animation: flash linear 1s infinite;
+}
+@-webkit-keyframes flash {
+  0% { opacity: 1; }
+  25% { opacity: 0; }
+  50% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@keyframes flash {
+  0% { opacity: 1; }
+  25% { opacity: 0; }
+  50% { opacity: 1; }
+  75% { opacity: 0; }
+  100% { opacity: 1; }
+}
