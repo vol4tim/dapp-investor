@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import axios from 'axios'
 import Base58 from 'base-58'
-import { URL_DATA_CHART } from '../../../../config/config'
+import { URL_DATA_CHART, MARKETS } from '../../../../config/config'
 import utils from '../../../../../web3_modules/web3-utils'
 import ethAccounts from '../../../../../web3_modules/eth-lib/lib/account'
 
@@ -28,23 +28,25 @@ function getAccount(msg) {
 }
 
 export function loadData(date) {
-  const merketsName = {
-    QmWboFP8XeBtFMbNYK3Ne8Z3gKFBSR5iQzkKgeNgQz3dz4: 'Роботы для медицины',
-    QmbnPpVAA2c5Fsfuo4D4VhwY5YfNe2o5P6KZnYjw47ebQT: 'Роботы для металлургии',
-    QmZky14ya2BbSNmjkrybxGdADTg7w7r4rKrVcotsz16HvP: 'Роботы для автомобилестроения',
-    QmfM63vD3hpDHFSikoRFxucyEgKb7FERcXvLDKpGXnWWh8: 'Роботы для производства электроники'
+  let merketsName = {}
+  _.forEach(MARKETS, (item) => {
+    merketsName = _.set(merketsName, item.model, item.name);
+  })
+  const colors = {
+    0: '#e6d32f',
+    1: '#abde9b',
+    2: '#7f81fb',
+    3: '#de2fe6'
   }
-  const merketsColor = {
-    QmWboFP8XeBtFMbNYK3Ne8Z3gKFBSR5iQzkKgeNgQz3dz4: '#e6d32f',
-    QmbnPpVAA2c5Fsfuo4D4VhwY5YfNe2o5P6KZnYjw47ebQT: '#abde9b',
-    QmZky14ya2BbSNmjkrybxGdADTg7w7r4rKrVcotsz16HvP: '#7f81fb',
-    QmfM63vD3hpDHFSikoRFxucyEgKb7FERcXvLDKpGXnWWh8: '#de2fe6'
-  }
+  let merketsColor = {}
+  _.forEach(MARKETS, (item, i) => {
+    merketsColor = _.set(merketsColor, item.model, colors[i]);
+  })
   const accounts = {
-    '0x00C40c00BFbdf3956eEfF267736DaF8f1203330f': 'Предложение 1',
-    '0x00d4E36981c631dB44714416075978d721aD5eF0': 'Предложение 2',
-    '0x00d636053Dea4d00B0165eBcAD5eA283Fbf48FA1': 'Предложение 3',
-    '0x008284E1D9582AAD15dDd9390216B3a0445D1474': 'Предложение 4'
+    '0xeb912041ac81e2dd8b707ed23f20cec6f4e21a95': 'Предложение 1',
+    '0x5017217da734c9b51d5dada217e93e0a70e27a21': 'Предложение 2',
+    '0xccc23de4d2d87ca9a694995fae40839f699f373e': 'Предложение 3',
+    '0x66f96a5535151486768560dd31251133105381e0': 'Предложение 4'
   }
 
   const markets = []

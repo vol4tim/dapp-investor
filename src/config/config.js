@@ -8,7 +8,7 @@ export const UTILITY_TOKEN = '0x5df531240f97049ee8d28a8e51030a3b5a8e8ce4'
 export const MARKETS = {
   0: {
     name: 'Роботы для медицины',
-    model: 'QmWboFP8XeBtFMbNYK3Ne8Z3gKFBSR5iQzkKgeNgQz3dz4',
+    model: 'QmfCcLKrTCuXsf6bHbVupVv4zsbs6kjqTQ7DRftGqMLjdW',
     fee: 5
   },
   1: {
