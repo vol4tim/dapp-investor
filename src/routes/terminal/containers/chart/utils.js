@@ -56,7 +56,7 @@ export function loadData(dateStart, dateEnd) {
   })
   const accounts = {
     // '0x4f627C75c590ED6e337d8aaf6704884375b35cE4': 'Предложение 11',
-    // '0x27eddd316c8a9bfed82e7d271c87922abb0c153c': 'Предложение 22',
+    '0x27eddd316c8a9bfed82e7d271c87922abb0c153c': 'Предложение 0',
     '0xeb912041ac81e2dd8b707ed23f20cec6f4e21a95': 'Предложение 1',
     '0x5017217da734c9b51d5dada217e93e0a70e27a21': 'Предложение 2',
     '0xccc23de4d2d87ca9a694995fae40839f699f373e': 'Предложение 3',
@@ -74,7 +74,6 @@ export function loadData(dateStart, dateEnd) {
           const { msg } = json[i]
           // console.log(msg);
           if (msg.model !== '' && msg.count > 0 && msg.cost && _.has(merketsName, msg.model)) {
-            // console.log(msg);
             const account = getAccount(msg)
             // console.log(account);
             if (_.has(accounts, account)) {

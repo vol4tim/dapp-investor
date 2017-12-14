@@ -1,4 +1,4 @@
-export const URL_DATA_CHART = 'http://airalab-pool.westeurope.cloudapp.azure.com:30000/'
+export const URL_DATA_CHART = 'https://pool.aira.life/'
 
 export const INVESTOR_SUPPLY = '0x7Dc07BE45D6547670e186568deB91a1A4E2E6e53'
 export const FACTORY_LIABILITY = '0x11523db0844427F08bb8464cbF48944351dEB262'
@@ -9,6 +9,7 @@ export const MARKETS = {
   0: {
     name: 'Роботы для медицины',
     model: 'QmfCcLKrTCuXsf6bHbVupVv4zsbs6kjqTQ7DRftGqMLjdW',
+    // model: 'QmWboFP8XeBtFMbNYK3Ne8Z3gKFBSR5iQzkKgeNgQz3dz4',
     fee: 5
   },
   1: {
