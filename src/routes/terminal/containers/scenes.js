@@ -63,9 +63,13 @@ export const chart = [
       // startdate.startOf('week').format('DD-MM-YYYY');
       // startdate.endOf('week');
       // console.log(startdate.format('DD-MM-YYYY'));
-      return loadData(startdate.subtract(1, 'days').format('DD-MM-YYYY') + ' 00:00 - ' + startdate.format('DD-MM-YYYY') + ' 00:00')
+      return loadData(startdate.subtract(1, 'days').format('YYYY-MM-DD'), startdate.format('YYYY-MM-DD'))
         .then((markets) => {
-          scene.modules.terminal.addMessages([{ content: <Chart markets={markets} />, type: 'message' }]);
+          if (markets.length > 0) {
+            scene.modules.terminal.addMessages([{ content: <Chart markets={markets} />, type: 'message' }]);
+          } else {
+            scene.modules.terminal.addMessages([{ content: 'Данные для графика отсутствуют', type: 'message' }]);
+          }
           scene.modules.terminal.setState({ wait: false })
           setTimeout(() => {
             scene.modules.terminal.doCommand('markets', false);

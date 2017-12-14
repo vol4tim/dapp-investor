@@ -11,13 +11,25 @@ const web3Beta = {
 }
 
 function getAccount(msg) {
-  const data = web3Beta.utils.soliditySha3(
-    { type: 'bytes', value: web3Beta.utils.bytesToHex(Base58.decode(msg.model)) },
-    { type: 'uint256', value: msg.cost },
-    { type: 'uint256', value: msg.count },
-    { type: 'uint256', value: msg.fee },
-    { type: 'bytes32', value: web3Beta.utils.bytesToHex(msg.salt) }
-  );
+  let data = ''
+  if (_.has(msg, 'objective')) {
+    data = web3Beta.utils.soliditySha3(
+      { type: 'bytes', value: web3Beta.utils.bytesToHex(Base58.decode(msg.model)) },
+      { type: 'bytes', value: web3Beta.utils.bytesToHex(Base58.decode(msg.objective)) },
+      { type: 'uint256', value: msg.cost },
+      { type: 'uint256', value: msg.count },
+      { type: 'uint256', value: msg.fee },
+      { type: 'bytes32', value: web3Beta.utils.bytesToHex(msg.salt) }
+    );
+  } else {
+    data = web3Beta.utils.soliditySha3(
+      { type: 'bytes', value: web3Beta.utils.bytesToHex(Base58.decode(msg.model)) },
+      { type: 'uint256', value: msg.cost },
+      { type: 'uint256', value: msg.count },
+      { type: 'uint256', value: msg.fee },
+      { type: 'bytes32', value: web3Beta.utils.bytesToHex(msg.salt) }
+    );
+  }
   const hashMessage = web3Beta.utils.soliditySha3(
     { type: 'bytes', value: '0x19457468657265756d205369676e6564204d6573736167653a0a3332' },
     { type: 'bytes', value: data }
@@ -27,7 +39,7 @@ function getAccount(msg) {
   return account;
 }
 
-export function loadData(date) {
+export function loadData(dateStart, dateEnd) {
   let merketsName = {}
   _.forEach(MARKETS, (item) => {
     merketsName = _.set(merketsName, item.model, item.name);
@@ -43,6 +55,8 @@ export function loadData(date) {
     merketsColor = _.set(merketsColor, item.model, colors[i]);
   })
   const accounts = {
+    // '0x4f627C75c590ED6e337d8aaf6704884375b35cE4': 'Предложение 11',
+    // '0x27EDdd316c8A9BfeD82E7D271c87922ABB0C153C': 'Предложение 22',
     '0xeb912041ac81e2dd8b707ed23f20cec6f4e21a95': 'Предложение 1',
     '0x5017217da734c9b51d5dada217e93e0a70e27a21': 'Предложение 2',
     '0xccc23de4d2d87ca9a694995fae40839f699f373e': 'Предложение 3',
@@ -50,74 +64,65 @@ export function loadData(date) {
   }
 
   const markets = []
-  return axios.get(URL_DATA_CHART, {
-    params: {
-      date
-    }
-  })
+  return axios.get(URL_DATA_CHART + 'api/v0/bag/' + dateStart + '/' + dateEnd)
     .then((result) => {
+      // const topic = '/market/sending/'
+      const topic = '/matcher/market/incoming/'
       const json = result.data
       for (let i = 0; i < json.length; i += 1) {
-        if (json[i].topic === '/market/sending/bid' || json[i].topic === '/market/sending/ask') {
-          let msg = '{' + json[i].msg + '}'
-          msg = msg.replace(new RegExp(': ', 'g'), "': ")
-          msg = msg.replace(new RegExp('objective', 'g'), "'objective")
-          msg = msg.replace(new RegExp('cost', 'g'), "'cost")
-          msg = msg.replace(new RegExp('count', 'g'), "'count")
-          msg = msg.replace(new RegExp('fee', 'g'), "'fee")
-          msg = msg.replace(new RegExp('salt', 'g'), "'salt")
-          msg = msg.replace(new RegExp('signature', 'g'), "'signature")
-          msg = msg.replace(new RegExp('{', 'g'), "{'")
-          msg = msg.replace(new RegExp("'", 'g'), '"')
-          msg = JSON.parse(msg)
-
-          const account = getAccount(msg)
-
-          const marketIndex = _.findIndex(markets, { name: merketsName[msg.model] });
-          if (marketIndex >= 0) {
-            if (json[i].topic === '/market/sending/bid') {
-              if (_.has(markets[marketIndex].series, account)) {
-                markets[marketIndex].series[account].data.push([msg.count, msg.cost])
-              } else {
-                markets[marketIndex].series[account] = {
-                  name: accounts[account],
-                  typeLine: 'bid',
-                  data: []
+        if (json[i].topic === topic + 'bid' || json[i].topic === topic + 'ask') {
+          const { msg } = json[i]
+          if (msg.model !== '' && msg.count > 0 && msg.cost && _.has(merketsName, msg.model)) {
+            // console.log(msg);
+            const account = getAccount(msg)
+            if (_.has(accounts, account)) {
+              const marketIndex = _.findIndex(markets, { name: merketsName[msg.model] });
+              if (marketIndex >= 0) {
+                if (json[i].topic === topic + 'bid') {
+                  if (_.has(markets[marketIndex].series, account)) {
+                    markets[marketIndex].series[account].data.push([msg.count, msg.cost])
+                  } else {
+                    markets[marketIndex].series[account] = {
+                      name: accounts[account],
+                      typeLine: 'bid',
+                      data: []
+                    }
+                    markets[marketIndex].series[account].data.push([msg.count, msg.cost])
+                  }
+                } else if (json[i].topic === topic + 'ask') {
+                  if (_.has(markets[marketIndex].series, 'ask')) {
+                    markets[marketIndex].series.ask.data.push([msg.count, msg.cost])
+                  } else {
+                    markets[marketIndex].series.ask = {
+                      name: 'Спрос',
+                      typeLine: 'ask',
+                      data: []
+                    }
+                    markets[marketIndex].series.ask.data.push([msg.count, msg.cost])
+                  }
                 }
-                markets[marketIndex].series[account].data.push([msg.count, msg.cost])
-              }
-            } else if (json[i].topic === '/market/sending/ask') {
-              if (_.has(markets[marketIndex].series, 'ask')) {
-                markets[marketIndex].series.ask.data.push([msg.count, msg.cost])
               } else {
-                markets[marketIndex].series.ask = {
-                  name: 'Спрос',
-                  typeLine: 'ask',
-                  data: []
+                const series = {}
+                if (json[i].topic === topic + 'bid') {
+                  series[account] = {
+                    name: accounts[account],
+                    typeLine: 'bid',
+                    data: [[msg.count, msg.cost]]
+                  }
+                } else if (json[i].topic === topic + 'ask') {
+                  series.ask = {
+                    name: 'Спрос',
+                    typeLine: 'ask',
+                    color: merketsColor[msg.model],
+                    data: [[msg.count, msg.cost]]
+                  }
                 }
-                markets[marketIndex].series.ask.data.push([msg.count, msg.cost])
+                markets.push({
+                  name: merketsName[msg.model],
+                  series
+                })
               }
             }
-          } else {
-            const series = {}
-            if (json[i].topic === '/market/sending/bid') {
-              series[account] = {
-                name: accounts[account],
-                typeLine: 'bid',
-                data: [[msg.count, msg.cost]]
-              }
-            } else if (json[i].topic === '/market/sending/ask') {
-              series.ask = {
-                name: 'Спрос',
-                typeLine: 'ask',
-                color: merketsColor[msg.model],
-                data: [[msg.count, msg.cost]]
-              }
-            }
-            markets.push({
-              name: merketsName[msg.model],
-              series
-            })
           }
         }
       }
