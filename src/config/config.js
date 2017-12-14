@@ -1,8 +1,9 @@
-export const URL_DATA_CHART = 'http://localhost:5000/'
+export const URL_DATA_CHART = 'http://airalab-pool.westeurope.cloudapp.azure.com:30000/'
 
-export const INVESTOR_SUPPLY = '0x46BF5949A107462A8bbe4392368a7eA8f0dfA135'
-export const FACTORY_LIABILITY = '0x8C5f9542D62d443F16691F3346E059465a44B0E7'
+export const INVESTOR_SUPPLY = '0x7Dc07BE45D6547670e186568deB91a1A4E2E6e53'
+export const FACTORY_LIABILITY = '0x11523db0844427F08bb8464cbF48944351dEB262'
 export const FACTORY_LIABILITY_TOPIC = '0x39a897fc2f5613d2a2b9ec75f5b36723b03492a752d0951ba46507590ec52650'
+export const UTILITY_TOKEN = '0x5df531240f97049ee8d28a8e51030a3b5a8e8ce4'
 
 export const MARKETS = {
   0: {
@@ -12,17 +13,17 @@ export const MARKETS = {
   },
   1: {
     name: 'Роботы для металлургии',
-    model: '111',
+    model: 'QmbnPpVAA2c5Fsfuo4D4VhwY5YfNe2o5P6KZnYjw47ebQT',
     fee: 5
   },
   2: {
     name: 'Роботы для автомобилестроения',
-    model: '222',
+    model: 'QmZky14ya2BbSNmjkrybxGdADTg7w7r4rKrVcotsz16HvP',
     fee: 5
   },
   3: {
     name: 'Роботы для производства электроники',
-    model: '333',
+    model: 'QmfM63vD3hpDHFSikoRFxucyEgKb7FERcXvLDKpGXnWWh8',
     fee: 5
   },
 }

@@ -1,9 +1,10 @@
 import React from 'react'
 import _ from 'lodash'
 import hett from 'hett'
+import moment from 'moment'
 import Table from './table'
 import Chart, { loadData } from './chart'
-import { getMarkets, getMarketMaxProfit, getMarketMinBalance, loadDataRate, getMarketsFund, smartFactory, refill } from './utils'
+import { getMarkets, getMarketMaxProfit, getMarketMinBalance, loadDataRate, getMarketsFund, smartFactory, refill, getUtility, approve } from './utils'
 
 const USER_FUND = 1
 
@@ -57,7 +58,12 @@ export const chart = [
   (scene, msg) => {
     if (msg.input.toLowerCase() === 'y' || msg.input.toLowerCase() === 'yes') {
       scene.modules.terminal.addMessages([{ content: '', type: 'message' }], true);
-      return loadData('13.11.2017 00:00 - 19.11.2017 00:00')
+      const startdate = moment();
+      // // startdate.subtract(1, 'days');
+      // startdate.startOf('week').format('DD-MM-YYYY');
+      // startdate.endOf('week');
+      // console.log(startdate.format('DD-MM-YYYY'));
+      return loadData(startdate.subtract(1, 'days').format('DD-MM-YYYY') + ' 00:00 - ' + startdate.format('DD-MM-YYYY') + ' 00:00')
         .then((markets) => {
           scene.modules.terminal.addMessages([{ content: <Chart markets={markets} />, type: 'message' }]);
           scene.modules.terminal.setState({ wait: false })
@@ -198,19 +204,67 @@ export const refillMarket = [
   (scene, msg) => {
     const market = Number(msg.input)
     if (market >= 1 && market <= 4) {
-      scene.modules.terminal.addMessages([{ content: 'Укажите сумму', type: 'message' }]);
-      return market - 1
+      return getUtility()
+        .then((result) => {
+          scene.modules.terminal.addMessages([{ content: 'У вас на балансе ' + result.balance + ' XRT. Доступно ' + result.approve + ' XRT.', type: 'message' }]);
+          if (result.balance > 0) {
+            scene.modules.terminal.addMessages([{ content: 'Укажите сумму', type: 'message' }]);
+          } else {
+            scene.modules.terminal.addMessages([{ content: 'У вас не достаточно средств', type: 'message' }]);
+            scene.modules.terminal.setState({ wait: false })
+            return false
+          }
+          return {
+            market: market - 1,
+            token: result
+          }
+        })
     }
     return false
   },
   (scene, msg, history) => {
-    const market = Number(history[1])
+    const market = Number(history[1].market)
     const value = Number(msg.input)
+    if (value > history[1].token.balance) {
+      scene.modules.terminal.addMessages([{ content: 'У вас не достаточно средств', type: 'message' }]);
+      scene.modules.terminal.setState({ wait: false })
+      return false
+    } else if (value > history[1].token.approve) {
+      scene.modules.terminal.addMessages([{ content: '', type: 'message' }], true);
+      return approve(value)
+        .then((txId) => {
+          scene.modules.terminal.addMessages([{ content: 'Отправленна транзакция на approve. tx: ' + txId, type: 'message' }]);
+          scene.modules.terminal.addMessages([{ content: '', type: 'message' }], true);
+          return hett.watcher.addTx(txId)
+        })
+        .then((transaction) => {
+          scene.modules.terminal.addMessages([{ content: 'Approve выполнен', type: 'message' }]);
+          scene.modules.terminal.addMessages([{ content: 'blockNumber: ' + transaction.blockNumber, type: 'message' }]);
+          scene.modules.terminal.addMessages([{ content: 'Выполняется перевод средств', type: 'message' }], true);
+          return getMarkets()
+        })
+        .then(result => refill(result[market].model, value))
+        .then((txId) => {
+          scene.modules.terminal.addMessages([{ content: 'Отправленна транзакция на перевод. tx: ' + txId, type: 'message' }]);
+          scene.modules.terminal.addMessages([{ content: '', type: 'message' }], true);
+          return hett.watcher.addTx(txId)
+        })
+        .then((transaction) => {
+          scene.modules.terminal.addMessages([{ content: 'blockNumber: ' + transaction.blockNumber, type: 'message' }]);
+          scene.modules.terminal.setState({ wait: false })
+          return true
+        })
+        .catch((e) => {
+          scene.modules.terminal.addMessages([{ content: 'Ошибка \n' + e.toString() + '\n\n', type: 'message' }]);
+          scene.modules.terminal.setState({ wait: false })
+          return false
+        })
+    }
     scene.modules.terminal.addMessages([{ content: '', type: 'message' }], true);
     return getMarkets()
       .then(result => refill(result[market].model, value))
       .then((txId) => {
-        scene.modules.terminal.addMessages([{ content: 'tx: ' + txId, type: 'message' }]);
+        scene.modules.terminal.addMessages([{ content: 'Отправленна транзакция на перевод. tx: ' + txId, type: 'message' }]);
         scene.modules.terminal.addMessages([{ content: '', type: 'message' }], true);
         return hett.watcher.addTx(txId)
       })

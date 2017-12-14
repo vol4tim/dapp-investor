@@ -29,16 +29,16 @@ function getAccount(msg) {
 
 export function loadData(date) {
   const merketsName = {
-    QmX6ZRFhNdoCsdtjBfYsPJd3iKahW3Hijp2WMJs8pfXeWP: 'Роботы для медицины',
-    QmTnmssidmL3Kqabz3eECxDsXUbXdQEEqaBE1vvdmkc1xv: 'Роботы для металлургии',
-    QmVLDAhCY3X9P2uRudKAryuQFPM5zqA3Yij1dY8FpGbL7T: 'Роботы для автомобилестроения',
-    QmYcq3KNupcEq6bsS8gJraJdFN8XXRHi6R3tMYUyxLr5Dz: 'Роботы для производства электроники'
+    QmWboFP8XeBtFMbNYK3Ne8Z3gKFBSR5iQzkKgeNgQz3dz4: 'Роботы для медицины',
+    QmbnPpVAA2c5Fsfuo4D4VhwY5YfNe2o5P6KZnYjw47ebQT: 'Роботы для металлургии',
+    QmZky14ya2BbSNmjkrybxGdADTg7w7r4rKrVcotsz16HvP: 'Роботы для автомобилестроения',
+    QmfM63vD3hpDHFSikoRFxucyEgKb7FERcXvLDKpGXnWWh8: 'Роботы для производства электроники'
   }
   const merketsColor = {
-    QmX6ZRFhNdoCsdtjBfYsPJd3iKahW3Hijp2WMJs8pfXeWP: '#e6d32f',
-    QmTnmssidmL3Kqabz3eECxDsXUbXdQEEqaBE1vvdmkc1xv: '#abde9b',
-    QmVLDAhCY3X9P2uRudKAryuQFPM5zqA3Yij1dY8FpGbL7T: '#7f81fb',
-    QmYcq3KNupcEq6bsS8gJraJdFN8XXRHi6R3tMYUyxLr5Dz: '#de2fe6'
+    QmWboFP8XeBtFMbNYK3Ne8Z3gKFBSR5iQzkKgeNgQz3dz4: '#e6d32f',
+    QmbnPpVAA2c5Fsfuo4D4VhwY5YfNe2o5P6KZnYjw47ebQT: '#abde9b',
+    QmZky14ya2BbSNmjkrybxGdADTg7w7r4rKrVcotsz16HvP: '#7f81fb',
+    QmfM63vD3hpDHFSikoRFxucyEgKb7FERcXvLDKpGXnWWh8: '#de2fe6'
   }
   const accounts = {
     '0x00C40c00BFbdf3956eEfF267736DaF8f1203330f': 'Предложение 1',

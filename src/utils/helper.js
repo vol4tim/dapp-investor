@@ -1,6 +1,12 @@
 import Promise from 'bluebird'
 import _ from 'lodash'
 import hett from 'hett'
+import BigNumber from 'bignumber.js'
+
+export const formatDecimals = (price, decimals) => {
+  const priceNum = new BigNumber(price);
+  return priceNum.shift(-decimals).toNumber();
+}
 
 export const getNetwork = () => {
   const funcAsync = Promise.promisify(hett.web3.version.getNetwork);

@@ -2,8 +2,9 @@ import Promise from 'bluebird'
 import _ from 'lodash'
 import hett from 'hett'
 import Base58 from 'base-58'
-import { MARKETS, FACTORY_LIABILITY, FACTORY_LIABILITY_TOPIC, INVESTOR_SUPPLY } from '../../../config/config'
+import { MARKETS, FACTORY_LIABILITY, FACTORY_LIABILITY_TOPIC, INVESTOR_SUPPLY, UTILITY_TOKEN } from '../../../config/config'
 import utils from '../../../../web3_modules/web3-utils'
+import { formatDecimals } from '../../../utils/helper'
 
 const web3Beta = {
   utils
@@ -187,9 +188,89 @@ export function getMarketMinBalance() {
     })
 }
 
+export function loadBalance(address, to) {
+  return hett.getContractByName('Token', address)
+    .then(contract => (
+      Promise.join(
+        contract.call('balanceOf', [to]),
+        contract.call('decimals'),
+        (balance, decimals) => (
+          {
+            balance: formatDecimals(balance, decimals),
+          }
+        )
+      )
+    ))
+    .then(info => (
+      {
+        address,
+        to,
+        balance: info.balance
+      }
+    ))
+}
+
+export function loadApprove(address, to) {
+  return hett.getContractByName('Token', address)
+    .then(contract => (
+      Promise.join(
+        contract.call('allowance', [hett.web3h.coinbase(), to]),
+        contract.call('decimals'),
+        (allowance, decimals) => (
+          {
+            approve: formatDecimals(allowance, decimals)
+          }
+        )
+      )
+    ))
+    .then(info => (
+      {
+        address,
+        to,
+        approve: info.approve
+      }
+    ))
+}
+
+export function loadToken(address) {
+  return hett.getContractByName('Token', address)
+    .then(contract => (
+      Promise.join(
+        contract.call('name'),
+        contract.call('symbol'),
+        (...info) => (
+          {
+            name: info[0],
+            symbol: info[1]
+          }
+        )
+      )
+    ))
+}
+
+export function getUtility() {
+  let balance = 0
+  return loadBalance(UTILITY_TOKEN, hett.web3h.coinbase())
+    .then((result) => {
+      balance = result
+      return loadApprove(UTILITY_TOKEN, INVESTOR_SUPPLY)
+    })
+    .then(result => (
+      {
+        balance: balance.balance,
+        approve: result.approve
+      }
+    ))
+}
+
 export function refill(market, value) {
   return hett.getContractByName('InvestorSupply', INVESTOR_SUPPLY)
     .then(contract => contract.send('refill', [market, value]))
+}
+
+export function approve(value) {
+  return hett.getContractByName('Token', UTILITY_TOKEN)
+    .then(contract => contract.send('approve', [INVESTOR_SUPPLY, value]))
 }
 
 export function smartFactory(marketsFunds, currentStateFactory) {
