@@ -160,13 +160,13 @@ export function loadDataRate() {
     })
     .then((result) => {
       _.forEach(result, (ask, i) => {
-        data[i].ask = ask + ' XRT'
+        data[i].ask = ask + ' WETH'
       })
       return getMarketsIncome()
     })
     .then((result) => {
       _.forEach(result, (income, i) => {
-        data[i].income = income + ' XRT'
+        data[i].income = income + ' WETH'
       })
       return _.values(data)
     })
