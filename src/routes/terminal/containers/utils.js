@@ -16,6 +16,26 @@ export function getMarkets() {
   })
 }
 
+export function getMarketsFee() {
+  return hett.getContractByName('BuilderRobotLiability', FACTORY_LIABILITY)
+    .then((contract) => {
+      const calls = []
+      _.forEach(MARKETS, (item) => {
+        calls.push(contract.call('getMarketFee', [web3Beta.utils.bytesToHex(Base58.decode(item.model))]))
+      })
+      return Promise.join(
+        ...calls,
+        (...supply) => {
+          const result = {}
+          _.forEach(MARKETS, (item, index) => {
+            result[index] = Number(supply[index])
+          })
+          return result
+        }
+      )
+    })
+}
+
 export function getMarketsFund() {
   return hett.getContractByName('InvestorSupply', INVESTOR_SUPPLY)
     .then((contract) => {
@@ -113,17 +133,21 @@ export function getMarketsAsk() {
 }
 
 export function getMarketsIncome() {
+  const log = []
+  let fee = []
   return getLog(FACTORY_LIABILITY, FACTORY_LIABILITY_TOPIC)
     .then((result) => {
-      const log = []
       _.forEach(result, (value) => {
         log.push('0x' + value.topics[2].substring(value.topics[2].length - 40))
       })
-      return log
+      return getMarketsFee()
     })
-    .then((addresses) => {
+    .then((result) => {
+      fee = result
+    })
+    .then(() => {
       const contracts = [];
-      _.forEach(addresses, (address) => {
+      _.forEach(log, (address) => {
         contracts.push(getLiability(address));
       })
       return Promise.all(contracts)
@@ -136,7 +160,7 @@ export function getMarketsIncome() {
       _.forEach(_.compact(result), (item) => {
         const index = _.findKey(MARKETS, o => o.model === item.model);
         if (index >= 0) {
-          income[index] += (item.count * item.cost * MARKETS[index].fee) / 100
+          income[index] += (item.count * item.cost * fee[index]) / 100
         }
       })
       return income
@@ -152,9 +176,15 @@ export function loadDataRate() {
           index: i,
           name: item.name,
           ask: '-',
-          fee: item.fee + '%',
+          fee: '-',
           income: '-'
         }
+      })
+      return getMarketsFee()
+    })
+    .then((result) => {
+      _.forEach(result, (fee, i) => {
+        data[i].fee = fee + '%'
       })
       return getMarketsAsk()
     })
