@@ -8,6 +8,11 @@ export const formatDecimals = (price, decimals) => {
   return priceNum.shift(-decimals).toNumber();
 }
 
+export const fromDecimals = (price, decimals) => {
+  const priceNum = new BigNumber(price);
+  return priceNum.shift(decimals).toNumber();
+}
+
 export const getNetwork = () => {
   const funcAsync = Promise.promisify(hett.web3.version.getNetwork);
   return funcAsync()

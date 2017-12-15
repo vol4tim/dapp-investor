@@ -5,6 +5,7 @@ import moment from 'moment'
 import Table from './table'
 import Chart, { loadData } from './chart'
 import { getMarkets, getMarketMaxProfit, getMarketMinBalance, loadDataRate, getMarketsFund, smartFactory, refill, getUtility, approve } from './utils'
+import { fromDecimals } from '../../../utils/helper'
 
 const USER_FUND = 0.01
 
@@ -203,7 +204,7 @@ export const markets = [
         return false
       } else if (value > history[2].token.approve) {
         scene.modules.terminal.addMessages([{ content: '', type: 'message' }], true);
-        return approve(value)
+        return approve(fromDecimals(value, 8))
           .then((txId) => {
             scene.modules.terminal.addMessages([{ content: 'Отправленна транзакция на approve. tx: ' + txId, type: 'message' }]);
             scene.modules.terminal.addMessages([{ content: '', type: 'message' }], true);
@@ -215,7 +216,7 @@ export const markets = [
             scene.modules.terminal.addMessages([{ content: 'Выполняется перевод средств', type: 'message' }], true);
             return getMarkets()
           })
-          .then(result => refill(result[market].model, value))
+          .then(result => refill(result[market].model, fromDecimals(value, 8)))
           .then((txId) => {
             scene.modules.terminal.addMessages([{ content: 'Отправленна транзакция на перевод. tx: ' + txId, type: 'message' }]);
             scene.modules.terminal.addMessages([{ content: '', type: 'message' }], true);
@@ -234,7 +235,7 @@ export const markets = [
       }
       scene.modules.terminal.addMessages([{ content: '', type: 'message' }], true);
       return getMarkets()
-        .then(result => refill(result[market].model, value))
+        .then(result => refill(result[market].model, fromDecimals(value, 8)))
         .then((txId) => {
           scene.modules.terminal.addMessages([{ content: 'Отправленна транзакция на перевод. tx: ' + txId, type: 'message' }]);
           scene.modules.terminal.addMessages([{ content: '', type: 'message' }], true);
@@ -304,7 +305,7 @@ export const refillMarket = [
       return false
     } else if (value > history[1].token.approve) {
       scene.modules.terminal.addMessages([{ content: '', type: 'message' }], true);
-      return approve(value)
+      return approve(fromDecimals(value, 8))
         .then((txId) => {
           scene.modules.terminal.addMessages([{ content: 'Отправленна транзакция на approve. tx: ' + txId, type: 'message' }]);
           scene.modules.terminal.addMessages([{ content: '', type: 'message' }], true);
@@ -316,7 +317,7 @@ export const refillMarket = [
           scene.modules.terminal.addMessages([{ content: 'Выполняется перевод средств', type: 'message' }], true);
           return getMarkets()
         })
-        .then(result => refill(result[market].model, value))
+        .then(result => refill(result[market].model, fromDecimals(value, 8)))
         .then((txId) => {
           scene.modules.terminal.addMessages([{ content: 'Отправленна транзакция на перевод. tx: ' + txId, type: 'message' }]);
           scene.modules.terminal.addMessages([{ content: '', type: 'message' }], true);
@@ -335,7 +336,7 @@ export const refillMarket = [
     }
     scene.modules.terminal.addMessages([{ content: '', type: 'message' }], true);
     return getMarkets()
-      .then(result => refill(result[market].model, value))
+      .then(result => refill(result[market].model, fromDecimals(value, 8)))
       .then((txId) => {
         scene.modules.terminal.addMessages([{ content: 'Отправленна транзакция на перевод. tx: ' + txId, type: 'message' }]);
         scene.modules.terminal.addMessages([{ content: '', type: 'message' }], true);
