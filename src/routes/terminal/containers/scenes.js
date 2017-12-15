@@ -162,12 +162,61 @@ export const markets = [
   (scene, msg, history) => {
     if (msg.input.toLowerCase() === 'game') {
       const market = Number(history[1])
-      const value = USER_FUND
+      // const value = USER_FUND
       scene.modules.terminal.addMessages([{ content: '', type: 'message' }], true);
-      return getMarkets()
+      return getUtility()
+        .then((result) => {
+          scene.modules.terminal.addMessages([{ content: 'У вас на балансе ' + result.balance + ' XRT. Доступно ' + result.approve + ' XRT.', type: 'message' }]);
+          if (result.balance <= 0) {
+            scene.modules.terminal.addMessages([{ content: 'У вас не достаточно средств', type: 'message' }]);
+            scene.modules.terminal.setState({ wait: false })
+            return false
+          }
+          scene.modules.terminal.addMessages([{
+            content: `Отправить транзакцию?
+  - Yes
+  - No
+            `,
+            type: 'message'
+          }]);
+          return {
+            market,
+            token: result
+          }
+        })
+        .catch((e) => {
+          scene.modules.terminal.addMessages([{ content: 'Ошибка \n' + e.toString() + '\n\n', type: 'message' }]);
+          scene.modules.terminal.setState({ wait: false })
+          return false
+        })
+    }
+    scene.modules.terminal.setState({ wait: false })
+    return false
+  },
+  (scene, msg, history) => {
+    const market = Number(history[2].market)
+    const value = USER_FUND
+    if (value > history[2].token.balance) {
+      scene.modules.terminal.addMessages([{ content: 'У вас не достаточно средств', type: 'message' }]);
+      scene.modules.terminal.setState({ wait: false })
+      return false
+    } else if (value > history[2].token.approve) {
+      scene.modules.terminal.addMessages([{ content: '', type: 'message' }], true);
+      return approve(value)
+        .then((txId) => {
+          scene.modules.terminal.addMessages([{ content: 'Отправленна транзакция на approve. tx: ' + txId, type: 'message' }]);
+          scene.modules.terminal.addMessages([{ content: '', type: 'message' }], true);
+          return hett.watcher.addTx(txId)
+        })
+        .then((transaction) => {
+          scene.modules.terminal.addMessages([{ content: 'Approve выполнен', type: 'message' }]);
+          scene.modules.terminal.addMessages([{ content: 'blockNumber: ' + transaction.blockNumber, type: 'message' }]);
+          scene.modules.terminal.addMessages([{ content: 'Выполняется перевод средств', type: 'message' }], true);
+          return getMarkets()
+        })
         .then(result => refill(result[market].model, value))
         .then((txId) => {
-          scene.modules.terminal.addMessages([{ content: 'tx: ' + txId, type: 'message' }]);
+          scene.modules.terminal.addMessages([{ content: 'Отправленна транзакция на перевод. tx: ' + txId, type: 'message' }]);
           scene.modules.terminal.addMessages([{ content: '', type: 'message' }], true);
           return hett.watcher.addTx(txId)
         })
@@ -182,8 +231,24 @@ export const markets = [
           return false
         })
     }
-    scene.modules.terminal.setState({ wait: false })
-    return false
+    scene.modules.terminal.addMessages([{ content: '', type: 'message' }], true);
+    return getMarkets()
+      .then(result => refill(result[market].model, value))
+      .then((txId) => {
+        scene.modules.terminal.addMessages([{ content: 'Отправленна транзакция на перевод. tx: ' + txId, type: 'message' }]);
+        scene.modules.terminal.addMessages([{ content: '', type: 'message' }], true);
+        return hett.watcher.addTx(txId)
+      })
+      .then((transaction) => {
+        scene.modules.terminal.addMessages([{ content: 'blockNumber: ' + transaction.blockNumber, type: 'message' }]);
+        scene.modules.terminal.setState({ wait: false })
+        return true
+      })
+      .catch((e) => {
+        scene.modules.terminal.addMessages([{ content: 'Ошибка \n' + e.toString() + '\n\n', type: 'message' }]);
+        scene.modules.terminal.setState({ wait: false })
+        return false
+      })
   }
 ]
 
