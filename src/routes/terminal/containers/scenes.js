@@ -6,7 +6,7 @@ import Table from './table'
 import Chart, { loadData } from './chart'
 import { getMarkets, getMarketMaxProfit, getMarketMinBalance, loadDataRate, getMarketsFund, smartFactory, refill, getUtility, approve } from './utils'
 
-const USER_FUND = 1
+const USER_FUND = 0.01
 
 export const connect = [
   (scene) => {
