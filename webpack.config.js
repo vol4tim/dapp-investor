@@ -61,7 +61,7 @@ module.exports = (env) => {
     context: sourcePath,
     entry: {
       app: './index.js',
-      vendor: ['react', 'react-dom', 'axios', 'bluebird', 'lodash']
+      vendor: ['react', 'react-dom', 'axios', 'bluebird', 'lodash', 'web3-utils', 'eth-lib']
     },
     output: {
       path: staticsPath,

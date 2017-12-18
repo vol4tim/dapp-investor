@@ -29,7 +29,7 @@ function getAccount(msg) {
     { type: 'bytes', value: data }
   );
   const signature = web3Beta.utils.bytesToHex(msg.signature)
-  const account = web3Beta.ethAccounts.recover(hashMessage, signature);
+  const account = web3Beta.account.recover(hashMessage, signature);
   return _.toLower(account);
 }
 

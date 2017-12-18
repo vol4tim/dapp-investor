@@ -1,7 +1,7 @@
-import utils from '../../web3_modules/web3-utils'
-import ethAccounts from '../../web3_modules/eth-lib/lib/account'
+import utils from 'web3-utils'
+import { account } from 'eth-lib'
 
 export default {
   utils,
-  ethAccounts
+  account
 }

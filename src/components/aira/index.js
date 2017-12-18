@@ -2,7 +2,7 @@ import React from 'react'
 import _ from 'lodash'
 import Terminal from '../terminal'
 import * as scenes from './scenes'
-import { getMarketsFund, getMarkets, smartFactory } from './utils'
+import { getMarketsFund, getMarkets, smartFactory, getUtility } from './utils'
 import { formatDecimals } from '../../utils/helper'
 import { Scene, addScene, sendScene } from '../../utils/scene'
 
@@ -19,6 +19,7 @@ const validCmd = {
     - game
   `,
   game: `Для игры используейте следующие команды:
+    - balance (Ваш баланс токена XRT)
     - refill (Инвестировать)
     - fund (Распределение капитала по рынкам)
     - distribution (Распределение фабрик)
@@ -97,6 +98,12 @@ const validCmd = {
         return message
       })
   },
+  balance: () => (
+    getUtility()
+      .then(result => (
+        'У вас на балансе ' + result.balance + ' XRT. Доступно ' + result.approve + ' XRT.'
+      ))
+  )
 }
 
 const AiraTerminal = () => (
