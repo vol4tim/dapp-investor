@@ -1,7 +1,7 @@
 /* eslint global-require: 0 */
 import React from 'react'
 import { render } from 'react-dom'
-import Plugin from './shared/components/app/plugin'
+import Plugin from './components/app/plugin'
 import './index.html';
 
 const startApp = () => {

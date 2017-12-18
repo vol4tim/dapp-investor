@@ -2,10 +2,10 @@ import React from 'react'
 import _ from 'lodash'
 import hett from 'hett'
 import moment from 'moment'
-import Table from './table'
-import Chart, { loadData } from './chart'
+import Table from '../table'
+import Chart, { loadData } from '../chart'
 import { getMarkets, getMarketMaxProfit, getMarketMinBalance, loadDataRate, getMarketsFund, smartFactory, refill, getUtility, approve } from './utils'
-import { fromDecimals } from '../../../utils/helper'
+import { fromDecimals } from '../../utils/helper'
 
 const USER_FUND = 0.01
 
@@ -13,8 +13,8 @@ export const connect = [
   (scene) => {
     scene.modules.terminal.addMessages([{
       content: `Хотите посмотреть текущую доходность роботизированных рынков?
-  - Yes
-  - No
+  y - Yes
+  n - No
       `,
       type: 'message'
     }]);
@@ -49,8 +49,8 @@ export const chart = [
   (scene) => {
     scene.modules.terminal.addMessages([{
       content: `Показать графики спроса и предложения для данных рынков за вчерашний день?
-  - Yes
-  - No
+  y - Yes
+  n - No
       `,
       type: 'message'
     }]);
@@ -133,7 +133,7 @@ export const markets = [
       return getMarketsFund()
         .then((marketsFund) => {
           const calcMarketsFund = marketsFund
-          calcMarketsFund[index] += USER_FUND
+          calcMarketsFund[index] += fromDecimals(USER_FUND, 8)
           let marketsRobot = {
             0: 0,
             1: 0,
@@ -175,8 +175,8 @@ export const markets = [
           }
           scene.modules.terminal.addMessages([{
             content: `Отправить транзакцию?
-  - Yes
-  - No
+  y - Yes
+  n - No
             `,
             type: 'message'
           }]);

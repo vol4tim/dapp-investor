@@ -1,0 +1,90 @@
+.wrapper {
+  position: relative;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  height: 360px;
+  height: 22.5rem;
+  background: #333;
+}
+.wrapper .d, .wrapper .a {
+  white-space: pre-line;
+}
+.wrapper .a {
+  color: #D7DB74;
+}
+.wrapper .pre {
+  font-size: 14px;
+  line-height: 1.5;
+  font-family: 'Roboto Mono', 'Ubuntu Mono', Courier New, monospace;
+  border: 0;
+  background: none;
+  height: 100%;
+  margin: 0;
+  color: #fff;
+  padding: 20px;
+  padding: 1.25rem;
+  overflow: auto;
+}
+.wrapper .pre > div > div {
+  margin-bottom: 27.2px;
+  margin-bottom: 1.7rem;
+}
+.wrapper .pre :global .table-bordered td, .wrapper .pre :global .table-bordered th {
+  border: 1px solid #84D72E;
+}
+.wrapper .pre :global .table-bordered th {
+  text-align: left;
+  color: #84D72E;
+}
+
+.wrapper input {
+  position: absolute;
+  overflow: hidden;
+  bottom: 0;
+}
+
+.prompt {
+  display: inline-block;
+  padding-right: .5rem;
+  color: #E92672;
+}
+
+.cursor {
+  -webkit-animation: flash linear 1s infinite;
+  animation: flash linear 1s infinite;
+}
+
+@-webkit-keyframes flash {
+  0% {
+    opacity: 1;
+  }
+  25% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes flash {
+  0% {
+    opacity: 1;
+  }
+  25% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

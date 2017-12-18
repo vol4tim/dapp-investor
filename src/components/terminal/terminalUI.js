@@ -59,12 +59,12 @@ class TerminalUI extends Component {
         className={styles.wrapper}
         ref={(node) => { this.node = node; }}
       >
-        <pre>
+        <div className={styles.pre}>
           <TerminalHistory messages={this.props.messages} updating={this.props.updating} />
           {!this.props.updating &&
             <TerminalInput input={this.props.input} focus={this.state.focus} />
           }
-        </pre>
+        </div>
         <input
           type="text"
           value={this.props.input || ''}

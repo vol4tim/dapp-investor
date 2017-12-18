@@ -2,13 +2,9 @@ import Promise from 'bluebird'
 import _ from 'lodash'
 import hett from 'hett'
 import Base58 from 'base-58'
-import { MARKETS, FACTORY_LIABILITY, FACTORY_LIABILITY_TOPIC, INVESTOR_SUPPLY, UTILITY_TOKEN } from '../../../config/config'
-import utils from '../../../../web3_modules/web3-utils'
-import { formatDecimals } from '../../../utils/helper'
-
-const web3Beta = {
-  utils
-}
+import { MARKETS, FACTORY_LIABILITY, FACTORY_LIABILITY_TOPIC, INVESTOR_SUPPLY, UTILITY_TOKEN } from '../../config/config'
+import { formatDecimals } from '../../utils/helper'
+import web3Beta from '../../utils/web3Beta'
 
 export function getMarkets() {
   return new Promise((resolve) => {

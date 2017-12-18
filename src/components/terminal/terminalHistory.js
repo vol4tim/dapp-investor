@@ -5,7 +5,7 @@ import TerminalMessage from './terminalMessage'
 
 const Message = (props) => {
   if (props.updating === true && props.i === props.messages.length - 1) {
-    return <span className="loader">...</span>
+    return <span className="loader" />
   }
   if (props.message.type === 'command') {
     return <TerminalCommand message={props.message.content} />

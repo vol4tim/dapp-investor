@@ -13,7 +13,7 @@ const Table = props => (
     <tbody>
       {props.data.map((row, index) => (
         <tr key={index}>
-          <th>{row.name}</th>
+          <td>{row.name}</td>
           <td>{row.ask}</td>
           <td>{row.fee}</td>
           <td>{row.income}</td>

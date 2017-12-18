@@ -1,14 +1,8 @@
 import _ from 'lodash'
 import axios from 'axios'
 import Base58 from 'base-58'
-import { URL_DATA_CHART, MARKETS } from '../../../../config/config'
-import utils from '../../../../../web3_modules/web3-utils'
-import ethAccounts from '../../../../../web3_modules/eth-lib/lib/account'
-
-const web3Beta = {
-  utils,
-  ethAccounts
-}
+import { URL_DATA_CHART, MARKETS } from '../../config/config'
+import web3Beta from '../../utils/web3Beta'
 
 function getAccount(msg) {
   let data = ''

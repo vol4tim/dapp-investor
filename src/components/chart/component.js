@@ -8,8 +8,10 @@ function getConfig(market) {
   const ask = _.find(series, { typeLine: 'ask' })
   const bids = _.filter(series, { typeLine: 'bid' })
   let intersect = []
-  for (let i = 0; i < bids.length; i += 1) {
-    intersect = _.concat(intersect, _.intersectionWith(ask.data, bids[i].data, _.isEqual))
+  if (ask && bids) {
+    for (let i = 0; i < bids.length; i += 1) {
+      intersect = _.concat(intersect, _.intersectionWith(ask.data, bids[i].data, _.isEqual))
+    }
   }
 
   series.push({

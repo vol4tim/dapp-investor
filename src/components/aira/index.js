@@ -1,11 +1,10 @@
 import React from 'react'
-import { connect } from 'react-redux'
 import _ from 'lodash'
-import Terminal from './terminal'
-import { Layout } from '../components/common'
-import { Scene, addScene, sendScene } from '../../../utils/scene'
+import Terminal from '../terminal'
 import * as scenes from './scenes'
 import { getMarketsFund, getMarkets, smartFactory } from './utils'
+import { formatDecimals } from '../../utils/helper'
+import { Scene, addScene, sendScene } from '../../utils/scene'
 
 const addScenes = (terminalNode) => {
   addScene(new Scene('connect', scenes.connect, { terminal: terminalNode }));
@@ -93,26 +92,24 @@ const validCmd = {
       .then((marketsFund) => {
         let message = ''
         _.forEach(markets, (item, i) => {
-          message += '\n' + (Number(i) + 1) + '. ' + item.name + ' - ' + marketsFund[i] + ' XRT'
+          message += '\n' + (Number(i) + 1) + '. ' + item.name + ' - ' + formatDecimals(marketsFund[i], 8) + ' XRT'
         })
         return message
       })
   },
 }
 
-const Container = () => (
-  <Layout title="Визуализации игры Робономика">
-    <Terminal
-      startupMessages={[{
-          content: `Сеть экономики роботов приветствует нового инвестора.
-Меня зовут Aira, я есть представление умных фабрик, способных самостоятельно заключать контракты обязательств на производство рыночных товаров.
+const AiraTerminal = () => (
+  <Terminal
+    startupMessages={[{
+        content: `Сеть экономики роботов приветствует нового инвестора.
+Меня зовут <b class="t-blue">AIRA</b>, я есть представление умных фабрик, способных самостоятельно заключать контракты обязательств на производство рыночных товаров.
 Чтобы начать выполните команду \`connect\``,
-          type: 'message'
-        }]}
-      commands={validCmd}
-      ref={(el) => { addScenes(el) }}
-    />
-  </Layout>
+        type: 'message'
+      }]}
+    commands={validCmd}
+    ref={(el) => { addScenes(el) }}
+  />
 )
 
-export default connect()(Container)
+export default AiraTerminal
