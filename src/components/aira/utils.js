@@ -1,66 +1,20 @@
 import Promise from 'bluebird'
 import _ from 'lodash'
-import hett from 'hett'
+import { hett } from 'hett'
 import Base58 from 'base-58'
-import { MARKETS, FACTORY_LIABILITY, FACTORY_LIABILITY_TOPIC, INVESTOR_SUPPLY, UTILITY_TOKEN } from '../../config/config'
-import { formatDecimals } from '../../utils/helper'
+import { MARKETS, FACTORY_LIABILITY, FACTORY_LIABILITY_TOPIC, INVESTOR_SUPPLY, UTILITY_TOKEN, SUB_BLOCK_DAY } from '../../config/config'
+import { formatDecimals, fromDecimals, currentBlock } from '../../utils/helper'
 import web3Beta from '../../utils/web3Beta'
 
-export function getMarkets() {
-  return new Promise((resolve) => {
-    resolve(MARKETS);
-  })
-}
-
-export function getMarketsFee() {
-  return hett.getContractByName('BuilderRobotLiability', FACTORY_LIABILITY)
-    .then((contract) => {
-      const calls = []
-      _.forEach(MARKETS, (item) => {
-        calls.push(contract.call('getMarketFee', [web3Beta.utils.bytesToHex(Base58.decode(item.model))]))
-      })
-      return Promise.join(
-        ...calls,
-        (...supply) => {
-          const result = {}
-          _.forEach(MARKETS, (item, index) => {
-            result[index] = Number(supply[index])
-          })
-          return result
-        }
-      )
-    })
-}
-
-export function getMarketsFund() {
-  return hett.getContractByName('InvestorSupply', INVESTOR_SUPPLY)
-    .then((contract) => {
-      const calls = []
-      _.forEach(MARKETS, (item) => {
-        calls.push(contract.call('supply', [item.model]))
-      })
-      return Promise.join(
-        ...calls,
-        (...supply) => {
-          const result = {}
-          _.forEach(MARKETS, (item, index) => {
-            result[index] = Number(supply[index])
-          })
-          return result
-        }
-      )
-    })
-}
-
-export const getLog = (address, topics) => {
+const getLog = (address, topics, from = 0) => {
   const options = {
-    fromBlock: 0,
+    fromBlock: from, // current - SUB_BLOCK_DAY,
     toBlock: 'latest',
     address,
     topics: [topics],
   }
   return new Promise((resolve, reject) => {
-    const filter = hett.web3.eth.filter(options);
+    const filter = hett().eth.filter(options);
     filter.get((error, result) => {
       if (error) {
         reject(error);
@@ -70,8 +24,9 @@ export const getLog = (address, topics) => {
   });
 }
 
+// получить данные по обязательству
 function getLiability(address) {
-  return hett.getContractByName('RobotLiability', address)
+  return hett().getContractByName('RobotLiability', address)
     .then(contract => (
       Promise.join(
         contract.call('model'),
@@ -97,8 +52,76 @@ function getLiability(address) {
     })
 }
 
+// получить название и символ токена
+// function loadToken(address) {
+//   return hett().getContractByName('Token', address)
+//     .then(contract => (
+//       Promise.join(
+//         contract.call('name'),
+//         contract.call('symbol'),
+//         (...info) => (
+//           {
+//             name: info[0],
+//             symbol: info[1]
+//           }
+//         )
+//       )
+//     ))
+// }
+
+// список рынков
+export function getMarkets() {
+  return new Promise((resolve) => {
+    resolve(MARKETS);
+  })
+}
+
+// комиссии рынков
+export function getMarketsFee() {
+  return hett().getContractByName('BuilderRobotLiability', FACTORY_LIABILITY)
+    .then((contract) => {
+      const calls = []
+      _.forEach(MARKETS, (item) => {
+        calls.push(contract.call('getMarketFee', [web3Beta.utils.bytesToHex(Base58.decode(item.model))]))
+      })
+      return Promise.join(
+        ...calls,
+        (...supply) => {
+          const result = {}
+          _.forEach(MARKETS, (item, index) => {
+            result[index] = Number(supply[index])
+          })
+          return result
+        }
+      )
+    })
+}
+
+// каптал по каждому рынку
+export function getMarketsFund() {
+  return hett().getContractByName('InvestorSupply', INVESTOR_SUPPLY)
+    .then((contract) => {
+      const calls = []
+      _.forEach(MARKETS, (item) => {
+        calls.push(contract.call('supply', [item.model]))
+      })
+      return Promise.join(
+        ...calls,
+        (...supply) => {
+          const result = {}
+          _.forEach(MARKETS, (item, index) => {
+            result[index] = Number(supply[index])
+          })
+          return result
+        }
+      )
+    })
+}
+
+// исполненый спрос за последние сутки
 export function getMarketsAsk() {
-  return getLog(FACTORY_LIABILITY, FACTORY_LIABILITY_TOPIC)
+  return currentBlock()
+    .then(result => getLog(FACTORY_LIABILITY, FACTORY_LIABILITY_TOPIC, result - SUB_BLOCK_DAY))
     .then((result) => {
       const log = []
       _.forEach(result, (value) => {
@@ -128,10 +151,12 @@ export function getMarketsAsk() {
     })
 }
 
+// получить доходы по каждому рынку за последние сутки
 export function getMarketsIncome() {
   const log = []
   let fee = []
-  return getLog(FACTORY_LIABILITY, FACTORY_LIABILITY_TOPIC)
+  return currentBlock()
+    .then(result => getLog(FACTORY_LIABILITY, FACTORY_LIABILITY_TOPIC, result - SUB_BLOCK_DAY))
     .then((result) => {
       _.forEach(result, (value) => {
         log.push('0x' + value.topics[2].substring(value.topics[2].length - 40))
@@ -163,41 +188,7 @@ export function getMarketsIncome() {
     })
 }
 
-export function loadDataRate() {
-  const data = {}
-  return getMarkets()
-    .then((result) => {
-      _.forEach(result, (item, i) => {
-        data[i] = {
-          index: i,
-          name: item.name,
-          ask: '-',
-          fee: '-',
-          income: '-'
-        }
-      })
-      return getMarketsFee()
-    })
-    .then((result) => {
-      _.forEach(result, (fee, i) => {
-        data[i].fee = fee + '%'
-      })
-      return getMarketsAsk()
-    })
-    .then((result) => {
-      _.forEach(result, (ask, i) => {
-        data[i].ask = ask + ' WETH'
-      })
-      return getMarketsIncome()
-    })
-    .then((result) => {
-      _.forEach(result, (income, i) => {
-        data[i].income = income + ' WETH'
-      })
-      return _.values(data)
-    })
-}
-
+// получить рынок у котороко максимальный доход
 export function getMarketMaxProfit() {
   return getMarketsIncome()
     .then((result) => {
@@ -206,6 +197,7 @@ export function getMarketMaxProfit() {
     })
 }
 
+// получить рынок на котором размещен минимальный капитал
 export function getMarketMinBalance() {
   return getMarketsFund()
     .then((result) => {
@@ -214,8 +206,28 @@ export function getMarketMinBalance() {
     })
 }
 
+// распределение фабрик пояснить
+export function smartFactory(marketsFunds, currentStateFactory) {
+  // http://ensrationis.com/smart-factory-and-capital/
+  const fullFund = _.sum(_.values(marketsFunds))
+  const sumRobots = _.sum(_.values(currentStateFactory)) + 1
+  const R = {}
+  const e = {}
+  // желаемое распределение роботов на рынках
+  _.forEach(marketsFunds, (fund, i) => { R[i] = fund * (sumRobots / fullFund) })
+  // вектор ошибок распределения (отклонение от желаемого значения распределения) [штук];
+  _.forEach(R, (r, i) => { e[i] = r - currentStateFactory[i] })
+  const max = _.max(_.values(e))
+  const keys = _.keys(e)
+  const k = keys[_.findIndex(_.values(e), v => v === max)]
+  const newStateFactory = currentStateFactory
+  newStateFactory[k] += 1
+  return newStateFactory
+}
+
+// получить баланс токенов
 export function loadBalance(address, to) {
-  return hett.getContractByName('Token', address)
+  return hett().getContractByName('Token', address)
     .then(contract => (
       Promise.join(
         contract.call('balanceOf', [to]),
@@ -236,11 +248,12 @@ export function loadBalance(address, to) {
     ))
 }
 
+// получить кол-во approve токенов
 export function loadApprove(address, to) {
-  return hett.getContractByName('Token', address)
+  return hett().getContractByName('Token', address)
     .then(contract => (
       Promise.join(
-        contract.call('allowance', [hett.web3h.coinbase(), to]),
+        contract.call('allowance', [hett().utils.coinbase, to]),
         contract.call('decimals'),
         (allowance, decimals) => (
           {
@@ -258,58 +271,14 @@ export function loadApprove(address, to) {
     ))
 }
 
-export function loadToken(address) {
-  return hett.getContractByName('Token', address)
-    .then(contract => (
-      Promise.join(
-        contract.call('name'),
-        contract.call('symbol'),
-        (...info) => (
-          {
-            name: info[0],
-            symbol: info[1]
-          }
-        )
-      )
-    ))
-}
-
-export function getUtility() {
-  let balance = 0
-  return loadBalance(UTILITY_TOKEN, hett.web3h.coinbase())
-    .then((result) => {
-      balance = result
-      return loadApprove(UTILITY_TOKEN, INVESTOR_SUPPLY)
-    })
-    .then(result => (
-      {
-        balance: balance.balance,
-        approve: result.approve
-      }
-    ))
-}
-
+// отправляет транзакцию инвестирования в рынок
 export function refill(market, value) {
-  return hett.getContractByName('InvestorSupply', INVESTOR_SUPPLY)
-    .then(contract => contract.send('refill', [market, value]))
+  return hett().getContractByName('InvestorSupply', INVESTOR_SUPPLY)
+    .then(contract => contract.send('refill', [market, fromDecimals(value, UTILITY_TOKEN.decimals)]))
 }
 
+// approve токена для инвестирования
 export function approve(value) {
-  return hett.getContractByName('Token', UTILITY_TOKEN)
-    .then(contract => contract.send('approve', [INVESTOR_SUPPLY, value]))
-}
-
-export function smartFactory(marketsFunds, currentStateFactory) {
-  const fullFund = _.sum(_.values(marketsFunds))
-  const sumRobots = _.sum(_.values(currentStateFactory)) + 1
-  const R = {}
-  const e = {}
-  _.forEach(marketsFunds, (fund, i) => { R[i] = fund * (sumRobots / fullFund) })
-  _.forEach(R, (r, i) => { e[i] = r - currentStateFactory[i] })
-  const max = _.max(_.values(e))
-  const keys = _.keys(e)
-  const k = keys[_.findIndex(_.values(e), v => v === max)]
-  const newStateFactory = currentStateFactory
-  newStateFactory[k] += 1
-  return newStateFactory
+  return hett().getContractByName('Token', UTILITY_TOKEN.address)
+    .then(contract => contract.send('approve', [INVESTOR_SUPPLY, fromDecimals(value, UTILITY_TOKEN.decimals)]))
 }

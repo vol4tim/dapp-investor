@@ -19,7 +19,7 @@
     "bignumber.js": "^5.0.0",
     "bluebird": "^3.5.1",
     "eth-lib": "^0.2.5",
-    "hett": "^0.0.4",
+    "hett": "^0.1.4",
     "highcharts": "^6.0.3",
     "lodash": "^4.17.4",
     "moment": "^2.19.3",
@@ -30,11 +30,14 @@
     "react-datetime": "^2.11.0",
     "react-dom": "^16.1.1",
     "react-highcharts": "^15.0.0",
+    "react-object-inspector": "^0.2.1",
     "react-redux": "^5.0.6",
     "react-router": "^4.2.0",
     "react-router-dom": "^4.2.2",
     "redux": "^3.7.2",
     "redux-thunk": "^2.2.0",
+    "styled-components": "^3.1.6",
+    "terminal-in-react": "^4.3.0",
     "web3-utils": "^1.0.0-beta.26"
   },
   "devDependencies": {

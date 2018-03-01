@@ -1,44 +1,77 @@
 /* eslint global-require: 0 */
 import React from 'react'
 import { render } from 'react-dom'
-import Plugin from './components/app/plugin'
-import './index.html';
+import Promise from 'bluebird'
+import _ from 'lodash'
+import { hett, ProviderAbi } from 'hett'
+import * as dapp from './components/dapp'
+import { getNetworkName } from './utils/helper'
+import * as abis from './abi'
+import './index.html'
 
+const init = () => {
+  hett(
+    web3.eth,
+    {
+      fromWei: web3.fromWei,
+      toWei: web3.toWei,
+      getNetworkAsync: Promise.promisify(web3.version.getNetwork),
+      getBlockAsync: Promise.promisify(web3.eth.getBlock)
+    },
+    null,
+    new ProviderAbi(abis)
+  )
+}
 const startApp = () => {
-  require('./app');
+  hett().utils.setAccount(0)
+    .then(() => {
+      require('./app');
+    })
 }
 const notWeb3 = () => {
   render(
-    <div className="container" id="maincontainer">
-      <Plugin />
-    </div>,
+    <dapp.Plugin />,
+    document.getElementById('root')
+  )
+}
+const depNetwork = (nets) => {
+  render(
+    <dapp.DepNetwork nets={nets} />,
     document.getElementById('root')
   )
 }
 const notAccounts = () => {
   render(
-    <div className="container" id="maincontainer">
-      <p>[ENG] Please unlock metamask account and try to refresh browser page.</p>
-      <p>[RUS] Пожалуйста, разблокируйте ваш metamask аккаунт или обновите страницу в браузере.</p>
-    </div>,
+    <dapp.NotAccounts />,
     document.getElementById('root')
   )
 }
 const loader = () => {
   render(
-    <div className="container" id="maincontainer">
-      <p>[ENG] Please wait while DApp is loading</p>
-      <p>[RUS] Пожалуйста подождите пока приложение загружается</p>
+    <div className="container">
+      <dapp.Load />
     </div>,
     document.getElementById('root')
   )
+}
+const canNetwork = () => {
+  const nets = ['ropsten']
+  getNetworkName()
+    .then((network) => {
+      if (_.indexOf(nets, network) >= 0) {
+        startApp()
+      } else {
+        depNetwork(nets)
+      }
+    })
 }
 let stepCurrent = 0;
 const stepMax = 5;
 const interval = setInterval(() => {
   if (typeof web3 !== 'undefined' && web3.eth.accounts.length > 0) {
     clearInterval(interval);
-    startApp();
+    init();
+    canNetwork();
     return;
   } else if (stepCurrent >= stepMax) {
     clearInterval(interval);

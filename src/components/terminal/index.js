@@ -1,122 +1,40 @@
-import React, { Component } from 'react'
-import _ from 'lodash'
-import TerminalUI from './terminalUI'
+import React from 'react'
+import Terminal from 'terminal-in-react';
+import commands, { session } from './commands'
+import { sendScene } from '../../utils/scene'
+import styles from './style.css'
 
-function encodeHTML(s) {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+const commandPassThrough = (cmd, print, runCommand) => {
+  if (session.has('current_command') && session.get('current_command')) {
+    sendScene('next', { cmd, print, runCommand });
+  } else {
+    print(`${cmd}: command not found`);
+  }
 }
 
-class TerminalApp extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      history: [],
-      historyActiveIndex: -1,
-      messages: (props.startupMessages !== undefined) ? props.startupMessages : [],
-      userInput: props.startupInput,
-      updating: false,
-      wait: false
-    }
-  }
-
-  updateUserInput(input) {
-    const sanitizedInput = encodeHTML(input);
-    this.setState({
-      userInput: sanitizedInput
-    })
-  }
-
-  history() {
-    let historyActiveIndex = this.state.historyActiveIndex + 1
-    if (historyActiveIndex > this.state.history.length - 1) {
-      historyActiveIndex = this.state.history.length - 1
-    }
-    this.setState({ historyActiveIndex })
-    let history = [...this.state.history]
-    history = _.reverse(history)
-    if (_.has(history, historyActiveIndex)) {
-      const command = history[historyActiveIndex]
-      this.updateUserInput(command)
-    }
-  }
-
-  addMessages(message, showSpinner = false) {
-    const { messages } = this.state;
-    if (Array.isArray(message) === true) {
-      message.map(msg => messages.push(msg))
-    } else {
-      messages.push(message)
-    }
-    this.setState({ messages, userInput: '', updating: showSpinner })
-  }
-
-  waitInput(input) {
-    const lastCommand = this.state.history[this.state.history.length - 1]
-    const params = lastCommand.split(' ')
-    const cmd = params.shift()
-    const messages = [{ content: input, type: 'command' }]
-    messages.push({ content: '', type: 'message' });
-    this.props.commands[cmd](input, true)
-    this.addMessages(messages);
-  }
-
-  doCommand(input, showCmd = true) {
-    if (this.state.wait === true) {
-      this.waitInput(input)
-      return
-    }
-    if (input === '') {
-      return
-    }
-    const params = input.split(' ')
-    const cmd = params.shift()
-    this.setState({ history: [...this.state.history, input], historyActiveIndex: -1 })
-    const messages = []
-    if (showCmd) {
-      messages.push({ content: input, type: 'command' })
-    }
-    const responseIndex = Object.keys(this.props.commands).indexOf(cmd)
-    if (responseIndex !== -1) {
-      const i = Object.keys(this.props.commands)[responseIndex];
-      if (_.isFunction(this.props.commands[i])) {
-        const result = this.props.commands[i](params)
-        if (_.isObject(result) && _.isFunction(result.then)) {
-          messages.push({ content: '', type: 'message' });
-          this.addMessages(messages, true);
-          result
-            .then((r) => {
-              this.addMessages({ content: r.toString(), type: 'message' });
-            })
-            .catch(() => {
-              this.addMessages({ content: cmd, type: 'error' });
-            })
-          return
-        } else if (result === true) {
-          this.setState({ wait: true })
-        } else {
-          messages.push({ content: result.toString(), type: 'message' });
-        }
-      } else {
-        messages.push({ content: this.props.commands[i], type: 'message' });
-      }
-    } else {
-      messages.push({ content: cmd, type: 'error' });
-    }
-    this.addMessages(messages);
-  }
-
-  render() {
-    return (
-      <TerminalUI
-        input={this.state.userInput}
-        messages={this.state.messages}
-        updating={this.state.updating}
-        updateUserInput={input => this.updateUserInput(input)}
-        doCommand={cmd => this.doCommand(cmd)}
-        history={() => this.history()}
+const AiraTerminal = () => (
+  <div className={styles.root}>
+    <div className={styles.wrapper}>
+      <Terminal
+        allowTabs={false}
+        color="#d7db74"
+        backgroundColor="#333"
+        prompt="#e92672"
+        outputColor="#fff"
+        barColor="#ccc"
+        style={{
+          fontSize: 14, lineHeight: 1.5, fontFamily: 'Roboto Mono, Ubuntu Mono, Courier New, monospace'
+        }}
+        hideTopBar
+        startState="maximised"
+        commandPassThrough={commandPassThrough}
+        commands={commands}
+        msg={`Сеть экономики роботов приветствует нового инвестора.
+        Меня зовут AIRA, я есть представление умных фабрик, способных самостоятельно заключать контракты обязательств на производство рыночных товаров.
+        Чтобы начать выполните команду \`connect\``}
       />
-    )
-  }
-}
+    </div>
+  </div>
+)
 
-export default TerminalApp
+export default AiraTerminal
