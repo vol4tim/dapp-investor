@@ -47,7 +47,8 @@ module.exports = (env) => {
         output: {
           comments: false,
         },
-      })
+      }),
+      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
     );
   } else {
     plugins.push(
@@ -61,7 +62,7 @@ module.exports = (env) => {
     context: sourcePath,
     entry: {
       app: './index.js',
-      vendor: ['react', 'react-dom', 'axios', 'bluebird', 'lodash', 'web3-utils', 'eth-lib', 'terminal-in-react']
+      vendor: ['react', 'react-dom', 'axios', 'bluebird', 'lodash', 'web3-utils', 'eth-lib', 'react-highcharts']
     },
     output: {
       path: staticsPath,
@@ -85,7 +86,26 @@ module.exports = (env) => {
             },
           },
         },
+        // {
+        //   // import $ from 'jquery'
+        //   // import 'imports-loader?jQuery=jquery!jquery.terminal'
+        //   // import 'style-loader!./jquery.terminal.css';
+        //   // import 'style-loader!./jquery.terminal.my.css';
+        //   test: /((jquery.terminal|jquery.terminal.my).css)/,
+        //   exclude: /node_modules/,
+        //   use: ExtractTextPlugin.extract({
+        //     fallback: 'style-loader',
+        //     use: [{
+        //       loader: 'css-loader',
+        //       options: {
+        //         // modules: true,
+        //         localIdentName: '[path][name]__[local]--[hash:base64:5]'
+        //       }
+        //     }]
+        //   })
+        // },
         {
+          // test: /^((?!jquery.terminal|jquery.terminal.my).)*\.css$/,
           test: /\.css$/,
           exclude: /node_modules/,
           use: ExtractTextPlugin.extract({
@@ -124,6 +144,10 @@ module.exports = (env) => {
             'babel-loader'
           ],
         },
+        // {
+        //   test: require.resolve("some-module"),
+        //   use: "imports-loader?this=>window"
+        // }
       ],
     },
     resolve: {

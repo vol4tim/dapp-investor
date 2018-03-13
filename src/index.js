@@ -1,4 +1,3 @@
-/* eslint global-require: 0 */
 import React from 'react'
 import { render } from 'react-dom'
 import Promise from 'bluebird'
@@ -7,6 +6,7 @@ import { hett, ProviderAbi } from 'hett'
 import * as dapp from './components/dapp'
 import { getNetworkName } from './utils/helper'
 import * as abis from './abi'
+import app from './app'
 import './index.html'
 
 const init = () => {
@@ -25,7 +25,7 @@ const init = () => {
 const startApp = () => {
   hett().utils.setAccount(0)
     .then(() => {
-      require('./app');
+      app()
     })
 }
 const notWeb3 = () => {
@@ -65,26 +65,35 @@ const canNetwork = () => {
       }
     })
 }
-let stepCurrent = 0;
-const stepMax = 5;
-const interval = setInterval(() => {
-  if (typeof web3 !== 'undefined' && web3.eth.accounts.length > 0) {
-    clearInterval(interval);
+
+const listeningChangeAccount = () => {
+  let [account] = web3.eth.accounts;
+  const accountInterval = () => {
+    if (web3.eth.accounts.length <= 0 && account !== undefined) {
+      account = undefined
+      notAccounts();
+    } else if (web3.eth.accounts[0] !== account) {
+      [account] = web3.eth.accounts;
+      canNetwork();
+    }
+    setTimeout(() => {
+      accountInterval()
+    }, 1000);
+  }
+  accountInterval()
+}
+
+loader();
+window.addEventListener('load', () => {
+  if (typeof web3 !== 'undefined') {
     init();
-    canNetwork();
-    return;
-  } else if (stepCurrent >= stepMax) {
-    clearInterval(interval);
-    if (typeof web3 === 'undefined') {
-      notWeb3();
-    } else {
+    if (web3.eth.accounts.length > 0) {
+      canNetwork();
+    } else if (web3.eth.accounts.length <= 0) {
       notAccounts();
     }
-    return;
+    listeningChangeAccount();
+  } else {
+    notWeb3();
   }
-  stepCurrent += 1;
-  if (typeof web3 !== 'undefined' && web3.eth.accounts.length <= 0) {
-    console.log('load accounts', web3.eth.accounts);
-  }
-  loader();
-}, 1000);
+})

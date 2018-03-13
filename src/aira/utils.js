@@ -2,9 +2,9 @@ import Promise from 'bluebird'
 import _ from 'lodash'
 import { hett } from 'hett'
 import Base58 from 'base-58'
-import { MARKETS, FACTORY_LIABILITY, FACTORY_LIABILITY_TOPIC, INVESTOR_SUPPLY, UTILITY_TOKEN, SUB_BLOCK_DAY } from '../../config/config'
-import { formatDecimals, fromDecimals, currentBlock } from '../../utils/helper'
-import web3Beta from '../../utils/web3Beta'
+import { MARKETS, FACTORY_LIABILITY, FACTORY_LIABILITY_TOPIC, INVESTOR_SUPPLY, UTILITY_TOKEN, SUB_BLOCK_DAY } from '../config/config'
+import { formatDecimals, fromDecimals, currentBlock } from '../utils/helper'
+import web3Beta from '../utils/web3Beta'
 
 const getLog = (address, topics, from = 0) => {
   const options = {
@@ -206,23 +206,28 @@ export function getMarketMinBalance() {
     })
 }
 
-// распределение фабрик пояснить
-export function smartFactory(marketsFunds, currentStateFactory) {
+// Капитал на Рынке А * (Сумма всех роботов/Сумма всего капитала)
+function desiredDistribution(cap, sumCap, sumRob) {
+  return cap * (sumRob / sumCap)
+}
+
+// Желаемое количество роботов - реальное количество, присутсвующих уже на рынке роботов
+function distributionError(cap, rob, sumCap, sumRob) {
+  return desiredDistribution(cap, sumCap, sumRob) - rob
+}
+
+// Рынок на который будет направлен очередная фабрика
+export function currentMarketDistribution(capMarkets, robMarkets) {
   // http://ensrationis.com/smart-factory-and-capital/
-  const fullFund = _.sum(_.values(marketsFunds))
-  const sumRobots = _.sum(_.values(currentStateFactory)) + 1
-  const R = {}
+  const sumCap = _.sum(_.values(capMarkets))
+  const sumRob = _.sum(_.values(robMarkets)) + 1
   const e = {}
-  // желаемое распределение роботов на рынках
-  _.forEach(marketsFunds, (fund, i) => { R[i] = fund * (sumRobots / fullFund) })
-  // вектор ошибок распределения (отклонение от желаемого значения распределения) [штук];
-  _.forEach(R, (r, i) => { e[i] = r - currentStateFactory[i] })
-  const max = _.max(_.values(e))
-  const keys = _.keys(e)
-  const k = keys[_.findIndex(_.values(e), v => v === max)]
-  const newStateFactory = currentStateFactory
-  newStateFactory[k] += 1
-  return newStateFactory
+  _.forEach(capMarkets, (cap, indexMarket) => {
+    e[indexMarket] = distributionError(cap, robMarkets[indexMarket], sumCap, sumRob)
+  })
+  const maxError = _.max(_.values(e))
+  const indexesMarket = _.keys(e)
+  return indexesMarket[_.findIndex(_.values(e), v => v === maxError)]
 }
 
 // получить баланс токенов

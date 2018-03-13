@@ -5,22 +5,20 @@
 :global .expand :local .root {
   height: 100%;
 }
+:global .prompt {
+  padding-right: 0
+}
 .wrapper {
   height: 100%;
   width: 100%;
 }
-:global .gSZAyM {
-  min-height: auto !important;
-}
-:global .hVxpdH {
-  font-size: 1em !important;
-}
 .wrapper :global .loader {
     display: inline-block;
     width: 15px;
-    height: 15px;
+    height: 15px !important;
     border-radius: 100%;
     position: relative;
+    margin: 3px;
 }
 .wrapper :global .loader:before {
     content: "";
@@ -39,10 +37,47 @@
 }
 :global @-webkit-keyframes spin{0%{-webkit-transform:rotate(0);transform:rotate(0)}100%{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}
 :global @keyframes spin{0%{-webkit-transform:rotate(0);transform:rotate(0)}100%{-webkit-transform:rotate(360deg);transform:rotate(360deg)}}
-.wrapper a {
-  color: #D7DB74;
+
+/* THEME */
+:global .terminal, :global .cmd {
+  background: #333;
+  color: #fff;
 }
-.wrapper pre {
+:global .terminal {
+  height: 100%;
+  padding: 5px 20px;
+}
+:global .cmd {
+  color: #d7db74;
+  padding-top: 20px;
+  padding-top: 1.25rem;
+  padding-bottom: 20px;
+  padding-bottom: 1.25rem;
+}
+:global .cmd .prompt {
+  color: #e92672;
+}
+:global .cmd .prompt, :global .cmd .cursor-line {
+  font-size: 14px;
+  line-height: 1;
+  font-family: 'Roboto Mono', 'Ubuntu Mono', Courier New, monospace;
+}
+:global .cmd .prompt > span {
+  /*margin-right: 3px;*/
+}
+:global .terminal .terminal-output .command {
+  color: #d7db74
+}
+:global .terminal .terminal-output > div {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+:global .cmd {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  margin: 5px 0;
+}
+:global .terminal .terminal-output > div > div {
   font-size: 14px;
   line-height: 1.5;
   font-family: 'Roboto Mono', 'Ubuntu Mono', Courier New, monospace;
@@ -50,40 +85,67 @@
   background: none;
   height: 100%;
   margin: 0;
-  color: #fff;
-  padding-top: 20px;
-  padding-top: 1.25rem;
-  padding-bottom: 20px;
-  padding-bottom: 1.25rem;
   overflow: auto;
-  white-space: pre-line;
+  /*white-space: pre-line;*/
 }
-.wrapper pre > div > div {
-  margin-bottom: 27.2px;
-  margin-bottom: 1.7rem;
+:global .terminal .terminal-output > div > div > span {
+  /*margin: 5px 0;*/
 }
-.wrapper table {
+:global .terminal .terminal-output table {
   border-collapse: collapse;
   border-spacing: 0;
 }
-.wrapper table td, table th {
-    vertical-align: top;
-    padding: 13.6px;
-    padding: .85rem;
+:global .terminal .terminal-output table td, :global .terminal .terminal-output table th {
+  vertical-align: top;
+  padding: 13.6px;
+  padding: .85rem;
 }
-.wrapper pre :global .table-bordered td, .wrapper pre :global .table-bordered th {
+:global .terminal .terminal-output .table-bordered td, :global .terminal .terminal-output .table-bordered th {
   border: 1px solid #84D72E;
 }
-.wrapper pre :global .table-bordered th {
+:global .terminal .terminal-output .table-bordered th {
   text-align: left;
   color: #84D72E;
 }
-.wrapper input, infut:focus {
-  background: none !important;
-  border: 0 !important;
-  font-family: 'Roboto Mono', 'Ubuntu Mono', Courier New, monospace !important;
-  font-size: 14px !important;
-  line-height: 1.5 !important;
-  padding: 0 !important;
-  margin: 3px !important;
+:global .cmd .cursor.blink {
+  color: #333;
+  border-left: 1px solid #333;
+  background-color: #333;
+  margin-left: 0px;
+  border-bottom: 0;
+}
+:global .terminal .inverted, :global .cmd .inverted, :global .cmd .cursor.blink {
+  border-left-color: #333;
+}
+:global @-webkit-keyframes a {
+  0%, 100% {
+      border-left-color: #333;
+  }
+  50% {
+      border-left-color: #d7db74;
+  }
+}
+:global @-ms-keyframes a {
+  0%, 100% {
+      border-left-color: #333;
+  }
+  50% {
+      border-left-color: #d7db74;
+  }
+}
+:global @-moz-keyframes a {
+  0%, 100% {
+      border-left-color: #333;
+  }
+  50% {
+      border-left-color: #d7db74;
+  }
+}
+:global @keyframes a {
+  0%, 100% {
+      border-left-color: #333;
+  }
+  50% {
+      border-left-color: #d7db74;
+  }
 }

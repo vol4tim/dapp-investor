@@ -38,6 +38,7 @@
   },
   "globals": {
     "Web3": true,
-    "web3": true
+    "web3": true,
+    "$": true,
   }
 }

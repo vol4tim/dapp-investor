@@ -1,9 +1,9 @@
 import axios from 'axios'
 import _ from 'lodash'
 import { hett } from 'hett'
-import { INVESTOR_SUPPLY, UTILITY_TOKEN, WETH_TOKEN, URL_DATA_INVESTOR } from '../../config/config'
+import { INVESTOR_SUPPLY, UTILITY_TOKEN, WETH_TOKEN, URL_DATA_INVESTOR } from '../config/config'
 import * as utils from './utils'
-import { formatDecimals, fromDecimals } from '../../utils/helper'
+import { formatDecimals, fromDecimals } from '../utils/helper'
 
 // вернет список рынков с данными за последние сутки (спрос, комиссия, доходность)
 export function marketsInfo() {
@@ -75,26 +75,23 @@ export function distributionFactory(forecast = null) {
       markets = result
       return utils.getMarketsFund()
     })
-    .then((marketsFund) => {
-      const calcMarketsFund = marketsFund
+    .then((result) => {
+      const capMarkets = result
       if (forecast !== null) {
-        calcMarketsFund[forecast.index] += fromDecimals(forecast.amount, UTILITY_TOKEN.decimals)
+        capMarkets[forecast.index] += fromDecimals(forecast.amount, UTILITY_TOKEN.decimals)
       }
-      let marketsRobot = {
-        0: 0,
-        1: 0,
-        2: 0,
-        3: 0
-      }
-      let i = 0
-      while (i < 4) {
-        marketsRobot = utils.smartFactory(calcMarketsFund, marketsRobot)
-        i += 1
+      const robMarkets = {}
+      _.forEach(capMarkets, (val, indexMarket) => {
+        robMarkets[indexMarket] = 0
+      })
+      for (let rob = 0; rob < 4; rob += 1) {
+        const indexMarket = utils.currentMarketDistribution(capMarkets, robMarkets)
+        robMarkets[indexMarket] += 1
       }
       return _.map(markets, (item, index) => (
         {
           ...item,
-          robots: marketsRobot[index]
+          robots: robMarkets[index]
         }
       ))
     })

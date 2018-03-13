@@ -1,9 +1,9 @@
 import * as controls from './controls'
-import * as scenes from './scenes'
 import * as utils from './utils'
+import scenes from './scenes'
 
 export {
   controls,
-  scenes,
-  utils
+  utils,
+  scenes
 }
