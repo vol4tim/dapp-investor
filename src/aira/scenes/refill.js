@@ -21,9 +21,9 @@ refill1.question = (ctx) => {
 }
 refill1.answer = (ctx, session) => {
   ctx.push((input) => {
-    const market = Number(input)
+    const market = Number(input) - 1
     session.set('market', market)
-    if (market >= 1 && market <= 4) {
+    if (market >= 0 && market < 4) {
       ctx.loader();
       controls.getUtility()
         .then((result) => {
