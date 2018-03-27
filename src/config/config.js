@@ -1,5 +1,5 @@
 export const URL_DATA_CHART = 'https://pool.aira.life/'
-export const URL_DATA_INVESTOR = 'http://devjs-01.corp.aira.life:3002/'
+export const URL_DATA_INVESTOR = 'https://devjs-01.corp.aira.life:3002/'
 
 export const INVESTOR_SUPPLY = '0x4F76a09Ce6892CEdc049Da763d2b060c5BBc6C1d'
 // export const INVESTOR_SUPPLY = '0x46BF5949A107462A8bbe4392368a7eA8f0dfA135' // test

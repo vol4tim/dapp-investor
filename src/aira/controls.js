@@ -115,6 +115,25 @@ export function distributionFund() {
     ))
 }
 
+// мое распределение капитала по рынкам
+export function distributionMyFund() {
+  let markets = {}
+  return utils.getMarkets()
+    .then((result) => {
+      markets = result
+      return utils.getMarketsAccountFund(hett().utils.coinbase)
+    })
+    .then(marketsFund => (
+      _.map(markets, (item, index) => (
+        {
+          ...item,
+          sum: formatDecimals(marketsFund[index], UTILITY_TOKEN.decimals),
+          fund: formatDecimals(marketsFund[index], UTILITY_TOKEN.decimals) + ' ' + UTILITY_TOKEN.symbol
+        }
+      ))
+    ))
+}
+
 // информация по токену Utility
 export function getUtility() {
   let balance = 0

@@ -118,6 +118,27 @@ export function getMarketsFund() {
     })
 }
 
+// мой каптал по каждому рынку
+export function getMarketsAccountFund(account) {
+  return hett().getContractByName('InvestorSupply', INVESTOR_SUPPLY)
+    .then((contract) => {
+      const calls = []
+      _.forEach(MARKETS, (item) => {
+        calls.push(contract.call('accountSupply', [item.model, account]))
+      })
+      return Promise.join(
+        ...calls,
+        (...supply) => {
+          const result = {}
+          _.forEach(MARKETS, (item, index) => {
+            result[index] = Number(supply[index])
+          })
+          return result
+        }
+      )
+    })
+}
+
 // исполненый спрос за последние сутки
 export function getMarketsAsk() {
   return currentBlock()
@@ -280,6 +301,12 @@ export function loadApprove(address, to) {
 export function refill(market, value) {
   return hett().getContractByName('InvestorSupply', INVESTOR_SUPPLY)
     .then(contract => contract.send('refill', [market, fromDecimals(value, UTILITY_TOKEN.decimals)]))
+}
+
+// отправляет транзакцию на вывод средств с рынка
+export function withdraw(market, value) {
+  return hett().getContractByName('InvestorSupply', INVESTOR_SUPPLY)
+    .then(contract => contract.send('withdraw', [market, fromDecimals(value, UTILITY_TOKEN.decimals)]))
 }
 
 // approve токена для инвестирования

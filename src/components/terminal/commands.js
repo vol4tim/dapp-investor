@@ -6,6 +6,7 @@ function help() {
 - connect (Начало)
 - balance (Ваш баланс токена XRT)
 - refill (Инвестировать)
+- withdraw (Вывод средств)
 - fund (Распределение капитала по рынкам)
 - distribution (Распределение фабрик)
 - income (Доход)
@@ -23,6 +24,9 @@ function market() {
 }
 function refill() {
   scenes.find('refill').enter(this.terminal)
+}
+function withdraw() {
+  scenes.find('withdraw').enter(this.terminal)
 }
 function income() {
   scenes.find('income').enter(this.terminal)
@@ -73,6 +77,7 @@ export default {
   chart,
   market,
   refill,
+  withdraw,
   income,
   top,
   distribution,
